@@ -109,7 +109,7 @@ class ProductExcelView(View):
         for product in products:
             product_data = [
                 product.name,
-                product.descriptiontion,
+                product.description,
                 product.date_added.strftime('%Y-%m-%d %H:%M:%S'),
             ]
             ws.append(product_data)
@@ -143,7 +143,7 @@ class ProductQtyExcelView(View):
         for product in products:
             product_data = [
                 product.name,
-                product.descriptiontion,
+                product.description,
                 product.date_added.strftime('%Y-%m-%d %H:%M:%S'),
                 product.quantity,
                 product.price,
