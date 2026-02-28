@@ -13,8 +13,8 @@ import uuid
 import io
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 MONTH_NAMES = [
-    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
 ]
 
 
@@ -150,8 +150,8 @@ class GeneratePDFPurchaseView(View):
             purchase_data = PurchaseProduct.objects.order_by('date_added').all()
 
         total_suppliers = PurchaseProduct.objects.values('supplier').distinct().count()
-        total_items_comprados = 0
-        total_costos = sum(purchase.total for purchase in purchase_data)
+        total_items_bought = 0
+        total_costs = sum(purchase.total for purchase in purchase_data)
 
         purchase_details = []
 
@@ -166,7 +166,7 @@ class GeneratePDFPurchaseView(View):
                     products_list[product_name] += item.cost
                 else:
                     products_list[product_name] = item.cost
-                total_items_comprados += item.qty
+                total_items_bought += item.qty
                 total_items += item.qty  
 
             purchase_details.append({
@@ -184,8 +184,8 @@ class GeneratePDFPurchaseView(View):
         html_string = render_to_string('report/purchase_pdf.html', {
             'purchase_data': purchase_details,
             'total_suppliers': total_suppliers,
-            'total_items_comprados': total_items_comprados,
-            'total_costos': total_costos,
+            'total_items_bought': total_items_bought,
+            'total_costs': total_costs,
             'current_date': current_date,
             'username': user.username,  
             'unique_key': unique_key,  
@@ -201,7 +201,7 @@ class GeneratePDFPurchaseView(View):
             return HttpResponse('We had some errors <pre>' + html_string + '</pre>')
 
         
-        filename = f"reporte_compras_general_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"general_purchase_report_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
 
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
@@ -221,8 +221,8 @@ class YearlyPDFPurchaseView(FormView):
         
         purchases = PurchaseProduct.objects.filter(date_added__year=year)
         total_suppliers = purchases.values('supplier').distinct().count()
-        total_items_comprados = purchases.aggregate(total=Sum('qty'))['total']
-        total_costos = purchases.aggregate(total=Sum('total'))['total']
+        total_items_bought = purchases.aggregate(total=Sum('qty'))['total']
+        total_costs = purchases.aggregate(total=Sum('total'))['total']
 
         
         purchase_details = []
@@ -237,7 +237,7 @@ class YearlyPDFPurchaseView(FormView):
                     products_list[product_name] += item.cost
                 else:
                     products_list[product_name] = item.cost
-                total_items_comprados += item.qty
+                total_items_bought += item.qty
                 total_items += item.qty 
             purchase_details.append({
                 'supplier': purchase.supplier,
@@ -252,8 +252,8 @@ class YearlyPDFPurchaseView(FormView):
         html_string = render_to_string('report/purchase_pdf_year.html', {
             'purchase_data': purchase_details,
             'total_suppliers': total_suppliers,
-            'total_items_comprados': total_items_comprados,
-            'total_costos': total_costos,
+            'total_items_bought': total_items_bought,
+            'total_costs': total_costs,
             'current_date': current_date,
             'username': self.request.user.username,
             'unique_key': unique_key,
@@ -264,9 +264,9 @@ class YearlyPDFPurchaseView(FormView):
         pisa_status = pisa.CreatePDF(io.BytesIO(html_string.encode("UTF-8")), dest=pdf_buffer, encoding='UTF-8')
 
         if pisa_status.err:
-            return HttpResponse('Hubo errores al generar el PDF.')
+            return HttpResponse('There were errors generating the PDF.')
 
-        filename = f"reporte_compras_anual_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"yearly_purchase_report_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         response.write(pdf_buffer.getvalue())
@@ -287,13 +287,13 @@ class MonthlyPDFPurchaseView(FormView):
             month = int(month)
             month_name = MONTH_CHOICES[month - 1][1]
         except ValueError:
-            return HttpResponseBadRequest("El año o el mes proporcionados no son válidos.")
+            return HttpResponseBadRequest("The provided year or month are not valid.")
 
         
         purchases = PurchaseProduct.objects.filter(date_added__year=year, date_added__month=month)
         total_suppliers = purchases.values('supplier').distinct().count()
-        total_items_comprados = purchases.aggregate(total=Sum('qty'))['total']
-        total_costos = purchases.aggregate(total=Sum('total'))['total']
+        total_items_bought = purchases.aggregate(total=Sum('qty'))['total']
+        total_costs = purchases.aggregate(total=Sum('total'))['total']
 
         
         purchase_details = []
@@ -307,7 +307,7 @@ class MonthlyPDFPurchaseView(FormView):
                     products_list[product_name] += item.cost
                 else:
                     products_list[product_name] = item.cost
-                total_items_comprados += item.qty
+                total_items_bought += item.qty
                 total_items += item.qty
             purchase_details.append({
                 'supplier': purchase.supplier,
@@ -323,8 +323,8 @@ class MonthlyPDFPurchaseView(FormView):
         html_string = render_to_string('report/purchase_pdf_month.html', {
             'purchase_data': purchase_details,
             'total_suppliers': total_suppliers,
-            'total_items_comprados': total_items_comprados,
-            'total_costos': total_costos,
+            'total_items_bought': total_items_bought,
+            'total_costs': total_costs,
             'current_date': current_date,
             'username': self.request.user.username,
             'unique_key': unique_key,
@@ -336,9 +336,9 @@ class MonthlyPDFPurchaseView(FormView):
         pisa_status = pisa.CreatePDF(io.BytesIO(html_string.encode("UTF-8")), dest=pdf_buffer, encoding='UTF-8')
 
         if pisa_status.err:
-            return HttpResponse('Hubo errores al generar el PDF.')
+            return HttpResponse('There were errors generating the PDF.')
 
-        filename = f"reporte_compras_mensual_{year}_{month}_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"monthly_purchase_report_{year}_{month}_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         response.write(pdf_buffer.getvalue())
@@ -360,14 +360,14 @@ class DailyPDFPurchaseView(FormView):
         month_name = MONTH_NAMES[int(month) - 1]
         
         if not self.is_valid_day(year, int(month), day):
-            messages.error(self.request, "La fecha ingresada no es válida.")
+            messages.error(self.request, "The entered date is not valid.")
             return self.form_invalid(form)
         
         
         purchases = PurchaseProduct.objects.filter(date_added__year=year, date_added__month=month, date_added__day=day)
         total_suppliers = purchases.values('supplier').distinct().count()
-        total_items_comprados = purchases.aggregate(total=Sum('qty'))['total']
-        total_costos = purchases.aggregate(total=Sum('total'))['total']
+        total_items_bought = purchases.aggregate(total=Sum('qty'))['total']
+        total_costs = purchases.aggregate(total=Sum('total'))['total']
 
         
         purchase_details = []
@@ -381,7 +381,7 @@ class DailyPDFPurchaseView(FormView):
                     products_list[product_name] += item.cost
                 else:
                     products_list[product_name] = item.cost
-                total_items_comprados += item.qty
+                total_items_bought += item.qty
                 total_items += item.qty
             purchase_details.append({
                 'supplier': purchase.supplier,
@@ -397,8 +397,8 @@ class DailyPDFPurchaseView(FormView):
         html_string = render_to_string('report/purchase_pdf_day.html', {
             'purchase_data': purchase_details,
             'total_suppliers': total_suppliers,
-            'total_items_comprados': total_items_comprados,
-            'total_costos': total_costos,
+            'total_items_bought': total_items_bought,
+            'total_costs': total_costs,
             'current_date': current_date,
             'username': self.request.user.username,
             'unique_key': unique_key,
@@ -411,9 +411,9 @@ class DailyPDFPurchaseView(FormView):
         pisa_status = pisa.CreatePDF(io.BytesIO(html_string.encode("UTF-8")), dest=pdf_buffer, encoding='UTF-8')
 
         if pisa_status.err:
-            return HttpResponse('Hubo errores al generar el PDF.')
+            return HttpResponse('There were errors generating the PDF.')
 
-        filename = f"reporte_compras_diario_{year}_{month}_{day}_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"daily_purchase_report_{year}_{month}_{day}_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         response.write(pdf_buffer.getvalue())

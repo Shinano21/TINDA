@@ -152,17 +152,17 @@ def password_reset_request(request):
                             print(email_content)
                             
                             
-                            messages.success(request, 'Se ha enviado un correo con instrucciones para resetear tu contraseña.')
+                            messages.success(request, 'An email has been sent with instructions to reset your password.')
                             return redirect('password_reset_confirm', uidb64=c['uid'], token=c['token'])
                         except BadHeaderError:
-                            messages.error(request, 'Hubo un problema al enviar el correo. Por favor, intenta nuevamente más tarde.')
+                            messages.error(request, 'There was a problem sending the email. Please try again later.')
                             return redirect('password_reset_request')
                 else:
-                    messages.error(request, 'No hay usuarios asociados a este correo electrónico.')
+                    messages.error(request, 'There are no users associated with this email address.')
             else:
-                messages.error(request, 'Por favor, introduce un correo electrónico válido.')  
+                messages.error(request, 'Please enter a valid email address.')
         else:
-            messages.error(request, 'Por favor, corrige los errores en el formulario.')
+            messages.error(request, 'Please correct the errors in the form.')
     else:
         form = PasswordResetEmailForm()
     return render(request=request, template_name="core/password_reset.html", context={"form": form})
@@ -181,12 +181,12 @@ def password_reset_confirm(request, uidb64, token):
             form = SetPasswordForm(user, request.POST)
             if form.is_valid():
                 form.save()
-                messages.success(request, 'Tu contraseña ha sido actualizada con éxito.')
-                return redirect('login')  # Redirigir al login después de cambiar la contraseña
+                messages.success(request, 'Your password has been successfully updated.')
+                return redirect('login')  # Redirect to login after changing the password
         else:
             form = SetPasswordForm(user)
         
-        # Aquí pasamos el nombre de usuario y el correo electrónico como contexto al template
+        # Here we pass the username and email as context to the template
         context = {
             'form': form,
             'username': user.username,
@@ -194,6 +194,6 @@ def password_reset_confirm(request, uidb64, token):
         }
         return render(request, 'core/password_reset_confirm.html', context)
     else:
-        messages.error(request, 'El enlace de reseteo de contraseña es inválido o ha expirado.')
-        return redirect('password_reset_request')  # Redirigir de nuevo a la solicitud de reseteo de contraseña
+        messages.error(request, 'The password reset link is invalid or has expired.')
+        return redirect('password_reset_request')  # Redirect back to the password reset request
 

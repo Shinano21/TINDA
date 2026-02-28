@@ -19,13 +19,13 @@ class GenerateExcelProfitView(View):
         if form.is_valid():
             sales_queryset = self.get_queryset(form)
 
-            total_ingresos = self.calculate_total_ingresos(sales_queryset)
-            total_costos = self.calculate_total_costos(sales_queryset)
-            total_ingresos_decimal = Decimal(total_ingresos)
-            total_costos_decimal = Decimal(total_costos)
-            total_ganancia = total_ingresos_decimal - total_costos_decimal
+            total_income = self.calculate_total_income(sales_queryset)
+            total_costs = self.calculate_total_costs(sales_queryset)
+            total_income_decimal = Decimal(total_income)
+            total_costs_decimal = Decimal(total_costs)
+            total_profit = total_income_decimal - total_costs_decimal
 
-            sales_data, total_utilidades = self.get_sales_data_and_utilities(sales_queryset)
+            sales_data, total_utilities = self.get_sales_data_and_utilities(sales_queryset)
 
             current_date = datetime.now()
             username = request.user.username
@@ -36,12 +36,12 @@ class GenerateExcelProfitView(View):
 
             
             response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = f'attachment; filename="reporte_ganancias_general_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx"'
+            response['Content-Disposition'] = f'attachment; filename="general_profit_report_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx"'
             response.write(excel_file.getvalue())
 
             return response
         else:
-            return HttpResponseBadRequest("Formulario no válido")
+            return HttpResponseBadRequest("Invalid form")
 
     def get_queryset(self, form):
         queryset = Sales.objects.all()
@@ -57,27 +57,27 @@ class GenerateExcelProfitView(View):
 
         return queryset
 
-    def calculate_total_ingresos(self, sales_queryset):
-        total_ingresos = sales_queryset.aggregate(total=Sum('grand_total'))['total'] or Decimal('0')
-        return total_ingresos
+    def calculate_total_income(self, sales_queryset):
+        total_income = sales_queryset.aggregate(total=Sum('grand_total'))['total'] or Decimal('0')
+        return total_income
 
-    def calculate_total_costos(self, sales_queryset):
-        total_costos = Decimal('0')
+    def calculate_total_costs(self, sales_queryset):
+        total_costs = Decimal('0')
 
         for sale in sales_queryset:
             for item in sale.salesitems_set.all():
                 purchase_product = PurchaseProduct.objects.filter(product=item.product).first()
                 if purchase_product:
-                    costo_producto = purchase_product.cost
-                    qty_comprada = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
-                    costo_total = costo_producto * Decimal(qty_comprada)
-                    total_costos += costo_total
+                    product_cost = purchase_product.cost
+                    qty_bought = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
+                    total_cost = product_cost * Decimal(qty_bought)
+                    total_costs += total_cost
 
-        return total_costos
+        return total_costs
 
     def get_sales_data_and_utilities(self, sales_queryset):
         sales_data = []
-        total_utilidades = Decimal(0)
+        total_utilities = Decimal(0)
 
         for sale in sales_queryset:
             sale_cost = self.calculate_sale_cost(sale)
@@ -88,76 +88,76 @@ class GenerateExcelProfitView(View):
                 purchase_product = PurchaseProduct.objects.filter(product=item.product).first()
                 if purchase_product:
                     cost_per_unit = purchase_product.cost
-                    qty_comprada = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
-                    total_qty_vendida = item.qty
-                    total_qty_comprada = qty_comprada
+                    qty_bought = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
+                    total_qty_sold = item.qty
+                    total_qty_bought = qty_bought
 
-                    product_ganancia = (Decimal(item.qty) * sale_profit) / Decimal(total_qty_vendida)
+                    product_profit = (Decimal(item.qty) * sale_profit) / Decimal(total_qty_sold)
 
-                    total_gasto_compras = cost_per_unit * Decimal(total_qty_comprada)
+                    total_purchase_expense = cost_per_unit * Decimal(total_qty_bought)
 
-                    ganancia_bruta = (sale_cost + product_ganancia) - total_gasto_compras
-                    total_utilidades += ganancia_bruta
+                    gross_profit = (sale_cost + product_profit) - total_purchase_expense
+                    total_utilities += gross_profit
                     products_list.append({
                         'product_name': item.product.name,
                         'cost_per_unit': cost_per_unit,
-                        'total_qty_vendida': total_qty_vendida,
-                        'total_qty_comprada': total_qty_comprada,
-                        'product_ganancia': product_ganancia,
-                        'ganancia_estado': 'Positiva' if product_ganancia > 0 else ('Negativa' if product_ganancia < 0 else 'Neutra'),
-                        'total_gasto_compras': total_gasto_compras,
-                        'ganancia_bruta': ganancia_bruta,
+                        'total_qty_sold': total_qty_sold,
+                        'total_qty_bought': total_qty_bought,
+                        'product_profit': product_profit,
+                        'profit_status': 'Positive' if product_profit > 0 else ('Negative' if product_profit < 0 else 'Neutral'),
+                        'total_purchase_expense': total_purchase_expense,
+                        'gross_profit': gross_profit,
                     })
 
             sales_data.append({
                 'date_added': sale.date_added,
                 'products_list': products_list,
-                'venta_total': Decimal(sale.grand_total),
-                'costo_total': sale_cost,
-                'ganancia_total': sale_profit,
+                'total_sale': Decimal(sale.grand_total),
+                'total_cost': sale_cost,
+                'total_profit': sale_profit,
             })
 
-        return sales_data, total_utilidades
+        return sales_data, total_utilities
 
     def calculate_sale_cost(self, sale):
         sale_cost = Decimal('0')
         for item in sale.salesitems_set.all():
             purchase_product = PurchaseProduct.objects.filter(product=item.product).first()
             if purchase_product:
-                costo_producto = purchase_product.cost
-                sale_cost += costo_producto * Decimal(item.qty)
+                product_cost = purchase_product.cost
+                sale_cost += product_cost * Decimal(item.qty)
         return sale_cost
 
     def generate_excel_file(self, sales_data):
         wb = Workbook()
         ws = wb.active
-        ws.title = "Reporte de Ganancias"
+        ws.title = "Profit Report"
 
-        # Encabezado
+        # Header
         headers = [
-            "Fecha de Venta", "Nombre del Producto", "Costo por Unidad", "Cantidad Vendida",
-            "Cantidad Comprada", "Ganancia por Producto", "Estado de Ganancia", "Total de Gasto en Compras",
-            "Ganancia Bruta"
+            "Sale Date", "Product Name", "Cost per Unit", "Quantity Sold",
+            "Quantity Bought", "Profit per Product", "Profit Status", "Total Purchase Expense",
+            "Gross Profit"
         ]
         ws.append(headers)
 
-        # Datos
+        # Data
         for sale in sales_data:
             for product in sale['products_list']:
                 row = [
                     sale['date_added'].strftime('%Y-%m-%d %H:%M:%S'),
                     product['product_name'],
                     product['cost_per_unit'],
-                    product['total_qty_vendida'],
-                    product['total_qty_comprada'],
-                    product['product_ganancia'],
-                    product['ganancia_estado'],
-                    product['total_gasto_compras'],
-                    product['ganancia_bruta']
+                    product['total_qty_sold'],
+                    product['total_qty_bought'],
+                    product['product_profit'],
+                    product['profit_status'],
+                    product['total_purchase_expense'],
+                    product['gross_profit']
                 ]
                 ws.append(row)
 
-        # Ajustar el ancho de las columnas
+        # Adjust column width
         for col in ws.iter_cols(min_col=1, max_col=ws.max_column):
             max_length = 0
             column = col[0].column_letter
@@ -185,13 +185,13 @@ class YearlyExcelProfitView(View):
             year = form.cleaned_data.get('year')
             sales_queryset = self.get_queryset(year)
 
-            total_ingresos = self.calculate_total_ingresos(sales_queryset)
-            total_costos = self.calculate_total_costos(sales_queryset)
-            total_ingresos_decimal = Decimal(total_ingresos)
-            total_costos_decimal = Decimal(total_costos)
-            total_ganancia = total_ingresos_decimal - total_costos_decimal
+            total_income = self.calculate_total_income(sales_queryset)
+            total_costs = self.calculate_total_costs(sales_queryset)
+            total_income_decimal = Decimal(total_income)
+            total_costs_decimal = Decimal(total_costs)
+            total_profit = total_income_decimal - total_costs_decimal
 
-            sales_data, total_utilidades = self.get_sales_data_and_utilities(sales_queryset)
+            sales_data, total_utilities = self.get_sales_data_and_utilities(sales_queryset)
 
             current_date = datetime.now()
             username = request.user.username
@@ -202,37 +202,37 @@ class YearlyExcelProfitView(View):
 
 
             response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = f'attachment; filename="reporte_ganancias_anual_{year}_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx"'
+            response['Content-Disposition'] = f'attachment; filename="yearly_profit_report_{year}_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx"'
             response.write(excel_file.getvalue())
 
             return response
         else:
-            return HttpResponseBadRequest("Formulario no válido")
+            return HttpResponseBadRequest("Invalid form")
 
     def get_queryset(self, year):
         return Sales.objects.filter(date_added__year=year)
 
-    def calculate_total_ingresos(self, sales_queryset):
-        total_ingresos = sales_queryset.aggregate(total=Sum('grand_total'))['total'] or Decimal('0')
-        return total_ingresos
+    def calculate_total_income(self, sales_queryset):
+        total_income = sales_queryset.aggregate(total=Sum('grand_total'))['total'] or Decimal('0')
+        return total_income
 
-    def calculate_total_costos(self, sales_queryset):
-        total_costos = Decimal('0')
+    def calculate_total_costs(self, sales_queryset):
+        total_costs = Decimal('0')
 
         for sale in sales_queryset:
             for item in sale.salesitems_set.all():
                 purchase_product = PurchaseProduct.objects.filter(product=item.product).first()
                 if purchase_product:
-                    costo_producto = purchase_product.cost
-                    qty_comprada = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
-                    costo_total = costo_producto * Decimal(qty_comprada)
-                    total_costos += costo_total
+                    product_cost = purchase_product.cost
+                    qty_bought = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
+                    total_cost = product_cost * Decimal(qty_bought)
+                    total_costs += total_cost
 
-        return total_costos
+        return total_costs
 
     def get_sales_data_and_utilities(self, sales_queryset):
         sales_data = []
-        total_utilidades = Decimal(0)
+        total_utilities = Decimal(0)
 
         for sale in sales_queryset:
             sale_cost = self.calculate_sale_cost(sale)
@@ -243,56 +243,56 @@ class YearlyExcelProfitView(View):
                 purchase_product = PurchaseProduct.objects.filter(product=item.product).first()
                 if purchase_product:
                     cost_per_unit = purchase_product.cost
-                    qty_comprada = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
-                    total_qty_vendida = item.qty
-                    total_qty_comprada = qty_comprada
+                    qty_bought = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
+                    total_qty_sold = item.qty
+                    total_qty_bought = qty_bought
 
-                    product_ganancia = (Decimal(item.qty) * sale_profit) / Decimal(total_qty_vendida)
+                    product_profit = (Decimal(item.qty) * sale_profit) / Decimal(total_qty_sold)
 
-                    total_gasto_compras = cost_per_unit * Decimal(total_qty_comprada)
+                    total_purchase_expense = cost_per_unit * Decimal(total_qty_bought)
 
-                    ganancia_bruta = (sale_cost + product_ganancia) - total_gasto_compras
-                    total_utilidades += ganancia_bruta
+                    gross_profit = (sale_cost + product_profit) - total_purchase_expense
+                    total_utilities += gross_profit
                     products_list.append({
                         'product_name': item.product.name,
                         'cost_per_unit': cost_per_unit,
-                        'total_qty_vendida': total_qty_vendida,
-                        'total_qty_comprada': total_qty_comprada,
-                        'product_ganancia': product_ganancia,
-                        'ganancia_estado': 'Positiva' if product_ganancia > 0 else ('Negativa' if product_ganancia < 0 else 'Neutra'),
-                        'total_gasto_compras': total_gasto_compras,
-                        'ganancia_bruta': ganancia_bruta,
+                        'total_qty_sold': total_qty_sold,
+                        'total_qty_bought': total_qty_bought,
+                        'product_profit': product_profit,
+                        'profit_status': 'Positive' if product_profit > 0 else ('Negative' if product_profit < 0 else 'Neutral'),
+                        'total_purchase_expense': total_purchase_expense,
+                        'gross_profit': gross_profit,
                     })
 
             sales_data.append({
                 'date_added': sale.date_added,
                 'products_list': products_list,
-                'venta_total': Decimal(sale.grand_total),
-                'costo_total': sale_cost,
-                'ganancia_total': sale_profit,
+                'total_sale': Decimal(sale.grand_total),
+                'total_cost': sale_cost,
+                'total_profit': sale_profit,
             })
 
-        return sales_data, total_utilidades
+        return sales_data, total_utilities
 
     def calculate_sale_cost(self, sale):
         sale_cost = Decimal('0')
         for item in sale.salesitems_set.all():
             purchase_product = PurchaseProduct.objects.filter(product=item.product).first()
             if purchase_product:
-                costo_producto = purchase_product.cost
-                sale_cost += costo_producto * Decimal(item.qty)
+                product_cost = purchase_product.cost
+                sale_cost += product_cost * Decimal(item.qty)
         return sale_cost
 
     def generate_excel_file(self, sales_data):
         wb = Workbook()
         ws = wb.active
-        ws.title = "Reporte de Ganancias"
+        ws.title = "Profit Report"
 
     
         headers = [
-            "Fecha de Venta", "Nombre del Producto", "Costo por Unidad", "Cantidad Vendida",
-            "Cantidad Comprada", "Ganancia por Producto", "Estado de Ganancia", "Total de Gasto en Compras",
-            "Ganancia Bruta"
+            "Sale Date", "Product Name", "Cost per Unit", "Quantity Sold",
+            "Quantity Bought", "Profit per Product", "Profit Status", "Total Purchase Expense",
+            "Gross Profit"
         ]
         ws.append(headers)
 
@@ -303,12 +303,12 @@ class YearlyExcelProfitView(View):
                     sale['date_added'].strftime('%Y-%m-%d %H:%M:%S'),
                     product['product_name'],
                     product['cost_per_unit'],
-                    product['total_qty_vendida'],
-                    product['total_qty_comprada'],
-                    product['product_ganancia'],
-                    product['ganancia_estado'],
-                    product['total_gasto_compras'],
-                    product['ganancia_bruta']
+                    product['total_qty_sold'],
+                    product['total_qty_bought'],
+                    product['product_profit'],
+                    product['profit_status'],
+                    product['total_purchase_expense'],
+                    product['gross_profit']
                 ]
                 ws.append(row)
 
@@ -341,13 +341,13 @@ class MonthlyExcelProfitView(FormView):
             month = form.cleaned_data.get('month')
             sales_queryset = self.get_queryset(year, month)
 
-            total_ingresos = self.calculate_total_ingresos(sales_queryset)
-            total_costos = self.calculate_total_costos(sales_queryset)
-            total_ingresos_decimal = Decimal(total_ingresos)
-            total_costos_decimal = Decimal(total_costos)
-            total_ganancia = total_ingresos_decimal - total_costos_decimal
+            total_income = self.calculate_total_income(sales_queryset)
+            total_costs = self.calculate_total_costs(sales_queryset)
+            total_income_decimal = Decimal(total_income)
+            total_costs_decimal = Decimal(total_costs)
+            total_profit = total_income_decimal - total_costs_decimal
 
-            sales_data, total_utilidades = self.get_sales_data_and_utilities(sales_queryset)
+            sales_data, total_utilities = self.get_sales_data_and_utilities(sales_queryset)
 
             current_date = datetime.now()
             username = request.user.username
@@ -358,37 +358,37 @@ class MonthlyExcelProfitView(FormView):
 
         
             response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = f'attachment; filename="reporte_ganancias_mensual_{month}_{year}_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx"'
+            response['Content-Disposition'] = f'attachment; filename="monthly_profit_report_{month}_{year}_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx"'
             response.write(excel_file.getvalue())
 
             return response
         else:
-            return HttpResponseBadRequest("Formulario no válido")
+            return HttpResponseBadRequest("Invalid form")
 
     def get_queryset(self, year, month):
         return Sales.objects.filter(date_added__year=year, date_added__month=month)
 
-    def calculate_total_ingresos(self, sales_queryset):
-        total_ingresos = sales_queryset.aggregate(total=Sum('grand_total'))['total'] or Decimal('0')
-        return total_ingresos
+    def calculate_total_income(self, sales_queryset):
+        total_income = sales_queryset.aggregate(total=Sum('grand_total'))['total'] or Decimal('0')
+        return total_income
 
-    def calculate_total_costos(self, sales_queryset):
-        total_costos = Decimal('0')
+    def calculate_total_costs(self, sales_queryset):
+        total_costs = Decimal('0')
 
         for sale in sales_queryset:
             for item in sale.salesitems_set.all():
                 purchase_product = PurchaseProduct.objects.filter(product=item.product).first()
                 if purchase_product:
-                    costo_producto = purchase_product.cost
-                    qty_comprada = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
-                    costo_total = costo_producto * Decimal(qty_comprada)
-                    total_costos += costo_total
+                    product_cost = purchase_product.cost
+                    qty_bought = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
+                    total_cost = product_cost * Decimal(qty_bought)
+                    total_costs += total_cost
 
-        return total_costos
+        return total_costs
 
     def get_sales_data_and_utilities(self, sales_queryset):
         sales_data = []
-        total_utilidades = Decimal(0)
+        total_utilities = Decimal(0)
 
         for sale in sales_queryset:
             sale_cost = self.calculate_sale_cost(sale)
@@ -399,56 +399,56 @@ class MonthlyExcelProfitView(FormView):
                 purchase_product = PurchaseProduct.objects.filter(product=item.product).first()
                 if purchase_product:
                     cost_per_unit = purchase_product.cost
-                    qty_comprada = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
-                    total_qty_vendida = item.qty
-                    total_qty_comprada = qty_comprada
+                    qty_bought = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
+                    total_qty_sold = item.qty
+                    total_qty_bought = qty_bought
 
-                    product_ganancia = (Decimal(item.qty) * sale_profit) / Decimal(total_qty_vendida)
+                    product_profit = (Decimal(item.qty) * sale_profit) / Decimal(total_qty_sold)
 
-                    total_gasto_compras = cost_per_unit * Decimal(total_qty_comprada)
+                    total_purchase_expense = cost_per_unit * Decimal(total_qty_bought)
 
-                    ganancia_bruta = (sale_cost + product_ganancia) - total_gasto_compras
-                    total_utilidades += ganancia_bruta
+                    gross_profit = (sale_cost + product_profit) - total_purchase_expense
+                    total_utilities += gross_profit
                     products_list.append({
                         'product_name': item.product.name,
                         'cost_per_unit': cost_per_unit,
-                        'total_qty_vendida': total_qty_vendida,
-                        'total_qty_comprada': total_qty_comprada,
-                        'product_ganancia': product_ganancia,
-                        'ganancia_estado': 'Positiva' if product_ganancia > 0 else ('Negativa' if product_ganancia < 0 else 'Neutra'),
-                        'total_gasto_compras': total_gasto_compras,
-                        'ganancia_bruta': ganancia_bruta,
+                        'total_qty_sold': total_qty_sold,
+                        'total_qty_bought': total_qty_bought,
+                        'product_profit': product_profit,
+                        'profit_status': 'Positive' if product_profit > 0 else ('Negative' if product_profit < 0 else 'Neutral'),
+                        'total_purchase_expense': total_purchase_expense,
+                        'gross_profit': gross_profit,
                     })
 
             sales_data.append({
                 'date_added': sale.date_added,
                 'products_list': products_list,
-                'venta_total': Decimal(sale.grand_total),
-                'costo_total': sale_cost,
-                'ganancia_total': sale_profit,
+                'total_sale': Decimal(sale.grand_total),
+                'total_cost': sale_cost,
+                'total_profit': sale_profit,
             })
 
-        return sales_data, total_utilidades
+        return sales_data, total_utilities
 
     def calculate_sale_cost(self, sale):
         sale_cost = Decimal('0')
         for item in sale.salesitems_set.all():
             purchase_product = PurchaseProduct.objects.filter(product=item.product).first()
             if purchase_product:
-                costo_producto = purchase_product.cost
-                sale_cost += costo_producto * Decimal(item.qty)
+                product_cost = purchase_product.cost
+                sale_cost += product_cost * Decimal(item.qty)
         return sale_cost
 
     def generate_excel_file(self, sales_data):
         wb = Workbook()
         ws = wb.active
-        ws.title = "Reporte de Ganancias"
+        ws.title = "Profit Report"
 
         
         headers = [
-            "Fecha de Venta", "Nombre del Producto", "Costo por Unidad", "Cantidad Vendida",
-            "Cantidad Comprada", "Ganancia por Producto", "Estado de Ganancia", "Total de Gasto en Compras",
-            "Ganancia Bruta"
+            "Sale Date", "Product Name", "Cost per Unit", "Quantity Sold",
+            "Quantity Bought", "Profit per Product", "Profit Status", "Total Purchase Expense",
+            "Gross Profit"
         ]
         ws.append(headers)
 
@@ -459,12 +459,12 @@ class MonthlyExcelProfitView(FormView):
                     sale['date_added'].strftime('%Y-%m-%d %H:%M:%S'),
                     product['product_name'],
                     product['cost_per_unit'],
-                    product['total_qty_vendida'],
-                    product['total_qty_comprada'],
-                    product['product_ganancia'],
-                    product['ganancia_estado'],
-                    product['total_gasto_compras'],
-                    product['ganancia_bruta']
+                    product['total_qty_sold'],
+                    product['total_qty_bought'],
+                    product['product_profit'],
+                    product['profit_status'],
+                    product['total_purchase_expense'],
+                    product['gross_profit']
                 ]
                 ws.append(row)
 
@@ -500,13 +500,13 @@ class DailyExcelProfitView(FormView):
 
         sales_queryset = self.get_queryset(year, month, day)
 
-        total_ingresos = self.calculate_total_ingresos(sales_queryset)
-        total_costos = self.calculate_total_costos(sales_queryset)
-        total_ingresos_decimal = Decimal(total_ingresos)
-        total_costos_decimal = Decimal(total_costos)
-        total_ganancia = total_ingresos_decimal - total_costos_decimal
+        total_income = self.calculate_total_income(sales_queryset)
+        total_costs = self.calculate_total_costs(sales_queryset)
+        total_income_decimal = Decimal(total_income)
+        total_costs_decimal = Decimal(total_costs)
+        total_profit = total_income_decimal - total_costs_decimal
 
-        sales_data, total_utilidades = self.get_sales_data_and_utilities(sales_queryset)
+        sales_data, total_utilities = self.get_sales_data_and_utilities(sales_queryset)
 
         current_date = datetime.now()
         username = self.request.user.username
@@ -517,7 +517,7 @@ class DailyExcelProfitView(FormView):
 
         
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename="reporte_ganancias_diaria_{day}_{month}_{year}_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx"'
+        response['Content-Disposition'] = f'attachment; filename="daily_profit_report_{day}_{month}_{year}_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx"'
         response.write(excel_file.getvalue())
 
         return response
@@ -530,27 +530,27 @@ class DailyExcelProfitView(FormView):
 
         return queryset
 
-    def calculate_total_ingresos(self, sales_queryset):
-        total_ingresos = sales_queryset.aggregate(total=Sum('grand_total'))['total'] or Decimal('0')
-        return total_ingresos
+    def calculate_total_income(self, sales_queryset):
+        total_income = sales_queryset.aggregate(total=Sum('grand_total'))['total'] or Decimal('0')
+        return total_income
 
-    def calculate_total_costos(self, sales_queryset):
-        total_costos = Decimal('0')
+    def calculate_total_costs(self, sales_queryset):
+        total_costs = Decimal('0')
 
         for sale in sales_queryset:
             for item in sale.salesitems_set.all():
                 purchase_product = PurchaseProduct.objects.filter(product=item.product).first()
                 if purchase_product:
-                    costo_producto = purchase_product.cost
-                    qty_comprada = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
-                    costo_total = costo_producto * Decimal(qty_comprada)
-                    total_costos += costo_total
+                    product_cost = purchase_product.cost
+                    qty_bought = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
+                    total_cost = product_cost * Decimal(qty_bought)
+                    total_costs += total_cost
 
-        return total_costos
+        return total_costs
 
     def get_sales_data_and_utilities(self, sales_queryset):
         sales_data = []
-        total_utilidades = Decimal(0)
+        total_utilities = Decimal(0)
 
         for sale in sales_queryset:
             sale_cost = self.calculate_sale_cost(sale)
@@ -561,56 +561,56 @@ class DailyExcelProfitView(FormView):
                 purchase_product = PurchaseProduct.objects.filter(product=item.product).first()
                 if purchase_product:
                     cost_per_unit = purchase_product.cost
-                    qty_comprada = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
-                    total_qty_vendida = item.qty
-                    total_qty_comprada = qty_comprada
+                    qty_bought = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
+                    total_qty_sold = item.qty
+                    total_qty_bought = qty_bought
 
-                    product_ganancia = (Decimal(item.qty) * sale_profit) / Decimal(total_qty_vendida)
+                    product_profit = (Decimal(item.qty) * sale_profit) / Decimal(total_qty_sold)
 
-                    total_gasto_compras = cost_per_unit * Decimal(total_qty_comprada)
+                    total_purchase_expense = cost_per_unit * Decimal(total_qty_bought)
 
-                    ganancia_bruta = (sale_cost + product_ganancia) - total_gasto_compras
-                    total_utilidades += ganancia_bruta
+                    gross_profit = (sale_cost + product_profit) - total_purchase_expense
+                    total_utilities += gross_profit
                     products_list.append({
                         'product_name': item.product.name,
                         'cost_per_unit': cost_per_unit,
-                        'total_qty_vendida': total_qty_vendida,
-                        'total_qty_comprada': total_qty_comprada,
-                        'product_ganancia': product_ganancia,
-                        'ganancia_estado': 'Positiva' if product_ganancia > 0 else ('Negativa' if product_ganancia < 0 else 'Neutra'),
-                        'total_gasto_compras': total_gasto_compras,
-                        'ganancia_bruta': ganancia_bruta,
+                        'total_qty_sold': total_qty_sold,
+                        'total_qty_bought': total_qty_bought,
+                        'product_profit': product_profit,
+                        'profit_status': 'Positive' if product_profit > 0 else ('Negative' if product_profit < 0 else 'Neutral'),
+                        'total_purchase_expense': total_purchase_expense,
+                        'gross_profit': gross_profit,
                     })
 
             sales_data.append({
                 'date_added': sale.date_added,
                 'products_list': products_list,
-                'venta_total': Decimal(sale.grand_total),
-                'costo_total': sale_cost,
-                'ganancia_total': sale_profit,
+                'total_sale': Decimal(sale.grand_total),
+                'total_cost': sale_cost,
+                'total_profit': sale_profit,
             })
 
-        return sales_data, total_utilidades
+        return sales_data, total_utilities
 
     def calculate_sale_cost(self, sale):
         sale_cost = Decimal('0')
         for item in sale.salesitems_set.all():
             purchase_product = PurchaseProduct.objects.filter(product=item.product).first()
             if purchase_product:
-                costo_producto = purchase_product.cost
-                sale_cost += costo_producto * Decimal(item.qty)
+                product_cost = purchase_product.cost
+                sale_cost += product_cost * Decimal(item.qty)
         return sale_cost
 
     def generate_excel_file(self, sales_data):
         wb = Workbook()
         ws = wb.active
-        ws.title = "Reporte de Ganancias"
+        ws.title = "Profit Report"
 
         
         headers = [
-            "Fecha de Venta", "Nombre del Producto", "Costo por Unidad", "Cantidad Vendida",
-            "Cantidad Comprada", "Ganancia por Producto", "Estado de Ganancia", "Total de Gasto en Compras",
-            "Ganancia Bruta"
+            "Sale Date", "Product Name", "Cost per Unit", "Quantity Sold",
+            "Quantity Bought", "Profit per Product", "Profit Status", "Total Purchase Expense",
+            "Gross Profit"
         ]
         ws.append(headers)
 
@@ -621,12 +621,12 @@ class DailyExcelProfitView(FormView):
                     sale['date_added'].strftime('%Y-%m-%d %H:%M:%S'),
                     product['product_name'],
                     product['cost_per_unit'],
-                    product['total_qty_vendida'],
-                    product['total_qty_comprada'],
-                    product['product_ganancia'],
-                    product['ganancia_estado'],
-                    product['total_gasto_compras'],
-                    product['ganancia_bruta']
+                    product['total_qty_sold'],
+                    product['total_qty_bought'],
+                    product['product_profit'],
+                    product['profit_status'],
+                    product['total_purchase_expense'],
+                    product['gross_profit']
                 ]
                 ws.append(row)
 

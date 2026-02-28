@@ -93,7 +93,7 @@
             </fieldset>
             <div class="row">
                 <div class="col-md-12 text-end">
-                    <button class="btn btn-primary btn-sm rounded-0" type="button" id="check_out"><i class="mdi mdi-save"></i> Procesar</button>
+                    <button class="btn btn-primary btn-sm rounded-0" type="button" id="check_out"><i class="mdi mdi-save"></i> Process</button>
                 </div>
             </div>
         </form>
@@ -171,7 +171,7 @@
             }
             if (!!prod_arr[id]) {
                 if ($('#POS-field table tbody input[name="product[]"][value="' + id + '"]').length > 0) {
-                    alert('El Item ya esta en la Lista.');
+                    alert('The item is already in the list.');
                     return false;
                 }
                 var data = prod_arr[id];
@@ -243,7 +243,7 @@
                 success: function(resp) {
                     if (typeof resp == 'object' && resp.status == 'success') {
                         el.removeClass("alert alert-danger err-msg");
-                        uni_modal("Recibo", "{% url 'pos:receipt-modal' %}?id=" + resp.sale);
+                        uni_modal("Receipt", "{% url 'pos:receipt-modal' %}?id=" + resp.sale);
                         $('#uni_modal').on('hide.bs.modal', function() {
                             location.reload();
                         });

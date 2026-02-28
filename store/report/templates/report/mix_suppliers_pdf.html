@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Lista de Proveedores</title>
+    <title>Suppliers List</title>
     <style>
         
         body {
@@ -26,15 +26,15 @@
     </style>
 </head>
 <body>
-    <h1>Lista de Proveedores</h1>
-    <p>Fecha de generación del informe: {{ current_date|date:"d/m/Y H:i:s" }}</p>
+    <h1>Suppliers List</h1>
+    <p>Report Generation Date: {{ current_date|date:"d/m/Y H:i:s" }}</p>
     <table>
         <thead>
             <tr>
-                <th>Nombre</th>
-                <th>Información de Contacto</th>
-                <th>Fecha de Registro</th>
-                <th>Última Actualización</th>
+                <th>Name</th>
+                <th>Contact Information</th>
+                <th>Registration Date</th>
+                <th>Last Update</th>
             </tr>
         </thead>
         <tbody>

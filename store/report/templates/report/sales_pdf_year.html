@@ -3,9 +3,9 @@
 <html>
 
 <head>
-    <title>Reporte de Ventas</title>
+    <title>Sales Report</title>
 
-    <!-- Estilos CSS -->
+    <!-- CSS Styles -->
     <style type="text/css">
         body {
             font-family: Arial, sans-serif;
@@ -72,7 +72,7 @@
             font-weight: bold;
         }
 
-        .report-cell-cliente {
+        .report-cell-customer {
             width: 20%; 
     
     
@@ -81,14 +81,14 @@
             text-overflow: ellipsis; 
     
         }
-        .report-cell-fagregado {
+        .report-cell-date-added {
             width: 25%; 
             
             white-space: nowrap; 
             overflow: hidden; 
             text-overflow: ellipsis;
         }
-        .report-cell-productos {
+        .report-cell-products {
             width: 25%; 
 
             white-space: nowrap; 
@@ -96,7 +96,7 @@
             text-overflow: ellipsis; 
             
         }
-        .report-cell-total {
+        .report-cell-total-amount-amount {
             width: 20%; 
             
             white-space: nowrap; 
@@ -104,7 +104,7 @@
             text-overflow: ellipsis;
         }
         
-        .report-cell-titems {
+        .report-cell-total-amount-amount-items {
             width: 10%; 
 
             
@@ -132,52 +132,52 @@
 
 <body>
     <header>
-        <p>Reporte de Ventas - Generado el: {{ current_date|date:'d-m-Y H:i' }}</p>
-        <p>Usuario: {{ username }}</p>
+        <p>Sales Report - Generated on: {{ current_date|date:'d-m-Y H:i' }}</p>
+        <p>User: {{ username }}</p>
     </header>
     <div class="content">
-        <h2 class="text-center">Reporte Anual de Ventas</h2>
-        <h2 class="text-center">Gestión {{ year }}</h2>
+        <h2 class="text-center">Yearly Sales Report</h2>
+        <h2 class="text-center">Year {{ year }}</h2>
         {% load humanize %}
 
         <table class="report-table">
             <thead>
                 <tr>
-                    <th class="report-cell report-cell-cliente">Clientes</th>
-                    <th class="report-cell">Fecha y Hora</th>
-                    <th class="report-cell report-cell-productos">Productos</th>
+                    <th class="report-cell report-cell-customer">Customers</th>
+                    <th class="report-cell">Date and Time</th>
+                    <th class="report-cell report-cell-products">Products</th>
                     <th class="report-cell">Total</th>
-                    <th class="report-cell">Cantidad Total Items</th>
+                    <th class="report-cell">Total Items Count</th>
                 </tr>
             </thead>
             <tbody>
                 {% for sale in sale_data %}
                 <tr>
-                    <td class="report-cell report-cell-cliente">{{ sale.cliente }}</td>
-                    <td class="report-cell report-cell-fagregado">{{ sale.date_added|date:'d-m-Y H:i' }}</td>
-                    <td class="report-cell report-cell-productos">
+                    <td class="report-cell report-cell-customer">{{ sale.customer }}</td>
+                    <td class="report-cell report-cell-date-added">{{ sale.date_added|date:'d-m-Y H:i' }}</td>
+                    <td class="report-cell report-cell-products">
                         {% if sale.products_list %}
                         {% for product, quantity in sale.products_list.items %}
                         {{ product|capfirst }} - {{ quantity }}<br>
                         {% endfor %}
                         {% endif %}
                     </td>
-                    <td class="report-cell report-cell-total">{{ sale.grand_total|floatformat:2|intcomma }} Bs</td>
-                    <td class="report-cell report-cell-titems">{{ sale.total_items_sold }}</td>
+                    <td class="report-cell report-cell-total-amount-amount">{{ sale.grand_total|floatformat:2|intcomma }}</td>
+                    <td class="report-cell report-cell-total-amount-amount-items">{{ sale.total_items_sold }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
 
         <div class="summary">
-            <h3>Resumen General</h3>
-            <p>Total de Clientes: {{ total_clientes }}</p>
-            <p>Cantidad Total de Items Vendidos: {{ total_items_vendidos }}</p>
-            <p>Total de Ventas: {{ total_ingresos|floatformat:2|intcomma }} Bs</p>
+            <h3>General Summary</h3>
+            <p>Total Customers: {{ total_customers }}</p>
+            <p>Total Items Sold: {{ total_items_sold }}</p>
+            <p>Total Sales: {{ total_income|floatformat:2|intcomma }}</p>
         </div>
     </div>
     <footer>
-        <p style="text-align: right;">Clave Única: {{ unique_key }}</p>
+        <p style="text-align: right;">Unique Key: {{ unique_key }}</p>
     </footer>
 </body>
 

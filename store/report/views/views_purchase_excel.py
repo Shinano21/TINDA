@@ -17,8 +17,8 @@ from report.forms import DayMonthYearReportForm
 from report.forms import MonthYearReportForm
 
 MONTH_NAMES = [
-    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
 ]
 
 def is_leap_year(year):
@@ -55,7 +55,7 @@ class GenerateExcelPurchaseView(View):
             ws = wb.active
 
             
-            headers = ['Proveedor', 'Fecha', 'Productos', 'Total', 'Cantidad Total de Ítems']  # headers remain Spanish for UI
+            headers = ['Supplier', 'Date', 'Products', 'Total', 'Total Items Bought']
             ws.append([''] + headers)
 
             
@@ -76,7 +76,7 @@ class GenerateExcelPurchaseView(View):
                 ws.append(purchase_data)
 
             
-            total_row = ['Total General:', total_suppliers, '', '', total_costs, total_items_purchased]
+            total_row = ['Grand Total:', total_suppliers, '', '', total_costs, total_items_purchased]
             ws.append(total_row)
 
             
@@ -104,13 +104,13 @@ class GenerateExcelPurchaseView(View):
             current_date = datetime.now()
             
             response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = f'attachment; filename=reporte_compras_general_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx'
+            response['Content-Disposition'] = f'attachment; filename=general_purchase_report_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx'
 
             wb.save(response)
 
             return response
         else:
-            return HttpResponseBadRequest("Formulario no válido")
+            return HttpResponseBadRequest("Invalid form")
 
 
 
@@ -130,8 +130,8 @@ class ExcelPurchaseYearView(FormView):
         wb = Workbook()
         ws = wb.active
 
-        ws.append([f"Reporte de Ventas: del {year}"])
-        headers = ['Proveedor', 'Fecha', 'Productos', 'Total', 'Cantidad Total de Ítems']
+        ws.append([f"Purchase Report: for {year}"])
+        headers = ['Supplier', 'Date', 'Products', 'Total', 'Total Items Bought']
         ws.append([''] + headers)
 
         for purchase_product in purchase_products:
@@ -148,7 +148,7 @@ class ExcelPurchaseYearView(FormView):
             ]
             ws.append(purchase_data)
 
-        total_row = ['Total General:', total_suppliers, '', '', total_costs, total_items_purchased]
+        total_row = ['Grand Total:', total_suppliers, '', '', total_costs, total_items_purchased]
         ws.append(total_row)
 
         for row in ws.iter_rows(min_row=1, max_row=ws.max_row):
@@ -172,7 +172,7 @@ class ExcelPurchaseYearView(FormView):
 
         current_date = datetime.now()
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename=reporte_compras_anual_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx'
+        response['Content-Disposition'] = f'attachment; filename=yearly_purchase_report_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx'
 
         wb.save(response)
 
@@ -189,7 +189,7 @@ class ExcelPurchaseMonthView(FormView):
         try:
             month_name = MONTH_NAMES[month - 1]
         except IndexError:
-            return HttpResponseBadRequest("El mes proporcionado no es válido.")
+            return HttpResponseBadRequest("The provided month is not valid.")
 
         # select purchases for given period
         purchase_products = PurchaseProduct.objects.filter(date_added__year=year, date_added__month=month)
@@ -200,8 +200,8 @@ class ExcelPurchaseMonthView(FormView):
 
         wb = Workbook()
         ws = wb.active
-        ws.append([f"Reporte de Ventas: de {month_name} del {year}"])
-        headers = ['Proveedor', 'Fecha', 'Productos', 'Total', 'Cantidad Total de Ítems']
+        ws.append([f"Purchase Report: for {month_name} {year}"])
+        headers = ['Supplier', 'Date', 'Products', 'Total', 'Total Items Bought']
         ws.append([''] + headers)
 
         for purchase_product in purchase_products:
@@ -218,7 +218,7 @@ class ExcelPurchaseMonthView(FormView):
             ]
             ws.append(purchase_data)
 
-        total_row = ['Total General:', total_suppliers, '', '', total_costs, total_items_purchased]
+        total_row = ['Grand Total:', total_suppliers, '', '', total_costs, total_items_purchased]
         ws.append(total_row)
 
         for row in ws.iter_rows(min_row=1, max_row=ws.max_row):
@@ -242,7 +242,7 @@ class ExcelPurchaseMonthView(FormView):
 
         current_date = datetime.now()
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename=reporte_compras_mensual_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx'
+        response['Content-Disposition'] = f'attachment; filename=monthly_purchase_report_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx'
 
         wb.save(response)
 
@@ -261,12 +261,12 @@ class ExcelPurchaseDayView(FormView):
         try:
             month_name = MONTH_NAMES[month - 1]
         except IndexError:
-            messages.error(self.request, "El mes proporcionado no es válido.")
-            return HttpResponseBadRequest("El mes proporcionado no es válido.")
+            messages.error(self.request, "The provided month is not valid.")
+            return HttpResponseBadRequest("The provided month is not valid.")
 
         if not is_valid_day(year, month, day):
-            messages.error(self.request, "La fecha ingresada no es válida.")
-            return HttpResponseBadRequest("La fecha ingresada no es válida.")
+            messages.error(self.request, "The entered date is not valid.")
+            return HttpResponseBadRequest("The entered date is not valid.")
 
         # filter purchases by day
         purchase_products = PurchaseProduct.objects.filter(date_added__year=year, date_added__month=month, date_added__day=day)
@@ -277,8 +277,8 @@ class ExcelPurchaseDayView(FormView):
 
         wb = Workbook()
         ws = wb.active
-        ws.append([f"Reporte de Ventas - Día: {day} de {month_name} del {year}"])
-        headers = ['Proveedor', 'Fecha', 'Productos', 'Total', 'Cantidad Total de Ítems']
+        ws.append([f"Purchase Report - Day: {day} {month_name} {year}"])
+        headers = ['Supplier', 'Date', 'Products', 'Total', 'Total Items Bought']
         ws.append([''] + headers)
 
         for purchase_product in purchase_products:
@@ -295,7 +295,7 @@ class ExcelPurchaseDayView(FormView):
             ]
             ws.append(purchase_data)
 
-        total_row = ['Total General:', total_suppliers, '', '', total_costs, total_items_purchased]
+        total_row = ['Grand Total:', total_suppliers, '', '', total_costs, total_items_purchased]
         ws.append(total_row)
 
         for row in ws.iter_rows(min_row=1, max_row=ws.max_row):
@@ -319,7 +319,7 @@ class ExcelPurchaseDayView(FormView):
 
         current_date = datetime.now()
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename=reporte_compras_diario_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx'
+        response['Content-Disposition'] = f'attachment; filename=daily_purchase_report_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx'
 
         wb.save(response)
 
