@@ -29,10 +29,121 @@
         body.login-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .card-login {
-            background-color: rgba(255,255,255,0.92);
+            background-color: rgba(255,255,255,0.96);
             border-radius: 1rem;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important;
+        }
+        .card-login .card-body {
+            padding: 2.5rem;
+        }
+        .card-title {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 1.75rem;
+            letter-spacing: 0.5px;
+        }
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        .input-group-text {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+        }
+        .form-control {
+            border: 1px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+            background-color: #fff;
+        }
+        .form-control::placeholder {
+            color: #adb5bd;
+        }
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #667eea;
+            border: none;
+            background: none;
+            padding: 0.25rem 0.5rem;
+            font-size: 1.2rem;
+            z-index: 10;
+            transition: all 0.2s ease;
+        }
+        .password-toggle:hover {
+            color: #764ba2;
+            transform: translateY(-50%) scale(1.1);
+        }
+        .password-field-wrapper {
+            position: relative;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        .btn-outline-secondary {
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-secondary:hover {
+            background-color: #f8f9fa;
+            border-color: #667eea;
+            color: #667eea;
+        }
+        .btn-link {
+            color: #667eea;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .btn-link:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+        .login-footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
+        }
+        .login-footer a {
+            flex: 1;
+            text-align: center;
+        }
+        .alert {
+            border-radius: 0.5rem;
+            border: none;
+            margin-bottom: 1.5rem;
         }
     </style>
     <script src="{% static 'posApp/assets/default/js/jquery-3.6.0.min.js' %}">
@@ -52,20 +163,23 @@
                 <h3 class="card-title text-center mb-4">Grocery POS System</h3>
                 <form id="login-user" action="" method="post" novalidate>
                     {% csrf_token %}
-                    <div class="mb-3 input-group">
+                    <div class="input-group mb-3">
                         <span class="input-group-text"><i class="mdi mdi-account"></i></span>
-                        <input type="text" name="username" class="form-control" placeholder="Username" required>
+                        <input type="text" name="username" class="form-control" placeholder="Username" required autofocus>
                     </div>
-                    <div class="mb-3 input-group">
+                    <div class="input-group mb-3 password-field-wrapper">
                         <span class="input-group-text"><i class="mdi mdi-lock"></i></span>
-                        <input type="password" name="password" class="form-control" placeholder="Password" required>
+                        <input type="password" id="password-field" name="password" class="form-control" placeholder="Password" required>
+                        <button type="button" id="password-toggle" class="password-toggle">
+                            <i class="mdi mdi-eye"></i>
+                        </button>
                     </div>
                     <div class="d-grid mb-3">
-                        <button class="btn btn-primary" type="submit">Login</button>
+                        <button class="btn btn-primary" type="submit">Sign In</button>
                     </div>
-                    <div class="d-flex justify-content-between">
-                        <a href="{% url 'register_user' %}" class="btn btn-outline-secondary btn-sm">Register</a>
-                        <a href="{% url 'password_reset' %}" class="btn btn-link btn-sm">Forgot password?</a>
+                    <div class="login-footer">
+                        <a href="{% url 'register_user' %}" class="btn btn-outline-secondary btn-sm">Create Account</a>
+                        <a href="{% url 'password_reset' %}" class="btn btn-link btn-sm">Forgot Password?</a>
                     </div>
                 </form>
             </div>
@@ -120,6 +234,27 @@
     <script src="{% static 'posApp/assets/material-admin/js/material.js' %}"></script>
     <script src="{% static 'posApp/assets/material-admin/js/misc.js' %}"></script>
     <script src="{% static 'posApp/assets/material-admin/js/dashboard.js' %}"></script>
+    <script>
+        // Password visibility toggle
+        $(document).ready(function() {
+            const passwordField = $('#password-field');
+            const passwordToggle = $('#password-toggle');
+            
+            passwordToggle.on('click', function(e) {
+                e.preventDefault();
+                const type = passwordField.attr('type');
+                const icon = passwordToggle.find('i');
+                
+                if (type === 'password') {
+                    passwordField.attr('type', 'text');
+                    icon.removeClass('mdi-eye').addClass('mdi-eye-off');
+                } else {
+                    passwordField.attr('type', 'password');
+                    icon.removeClass('mdi-eye-off').addClass('mdi-eye');
+                }
+            });
+        });
+    </script>
     <script>
         $(function() {
             $('#login-user').submit(function(e) {
