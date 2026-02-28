@@ -155,22 +155,18 @@ class MixPDFSalesDayView(FormView):
     form_class = DayForm
 
     def form_valid(self, form):
-        year = int(form.cleaned_data['year'])
-        month = int(form.cleaned_data['month'])
-        day = int(form.cleaned_data['day'])
+        selected_date = form.cleaned_data['date']
+        year = selected_date.year
+        month = selected_date.month
+        day = selected_date.day
 
-        
         start_date = datetime(year, month, day, 3, 0, 0)
         end_date = start_date + timedelta(days=1)
 
         month_name = MONTH_NAMES[month - 1]
         
-        day_name_english = start_date.strftime('%A')  
-        day_name = DAYS_OF_WEEK[day_name_english]  
-        
-        if not self.is_valid_day(year, month, day):
-            messages.error(self.request, "La fecha ingresada no es válida.")
-            return self.form_invalid(form)
+        day_name_english = start_date.strftime('%A')
+        day_name = DAYS_OF_WEEK[day_name_english]
 
         
         sales = Sales.objects.filter(date_added__gte=start_date, date_added__lt=end_date)
@@ -250,12 +246,15 @@ class MixTramoPDFSalesDayView(FormView):
     form_class = DayTramoForm
 
     def form_valid(self, form):
-        start_year = int(form.cleaned_data['start_year'])
-        start_month = int(form.cleaned_data['start_month'])
-        start_day = int(form.cleaned_data['start_day'])
-        end_year = int(form.cleaned_data['end_year'])
-        end_month = int(form.cleaned_data['end_month'])
-        end_day = int(form.cleaned_data['end_day'])
+        start_date_field = form.cleaned_data['start_date']
+        end_date_field = form.cleaned_data['end_date']
+
+        start_year = start_date_field.year
+        start_month = start_date_field.month
+        start_day = start_date_field.day
+        end_year = end_date_field.year
+        end_month = end_date_field.month
+        end_day = end_date_field.day
 
         
         if not self.is_valid_date_range(start_year, start_month, start_day, end_year, end_month, end_day):

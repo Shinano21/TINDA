@@ -39,9 +39,7 @@ class YearForm(forms.Form):
 
 
 class DayForm(forms.Form):
-    year = forms.IntegerField(label="Año", min_value=1900, max_value=2100)
-    month = forms.ChoiceField(label="Mes", choices=MONTH_CHOICES)
-    day = forms.IntegerField(label="Día", min_value=1, max_value=31)
+    date = forms.DateField(label='Date', widget=forms.DateInput(attrs={'type': 'date'}))
 
 
 class DateRangeForm(forms.Form):
@@ -83,39 +81,6 @@ class DayMonthYearReportForm(forms.Form):
     day = forms.IntegerField(min_value=1, max_value=31, label='Día')  # Nota: No valida días específicos para cada mes
 
 class DayTramoForm(forms.Form):
-    start_year = forms.IntegerField(label='Año Inicio', min_value=2023)
-    start_month = forms.ChoiceField(label='Mes Inicio', choices=[
-        ('', 'Mes'),
-        (1, 'Enero'),
-        (2, 'Febrero'),
-        (3, 'Marzo'),
-        (4, 'Abril'),
-        (5, 'Mayo'),
-        (6, 'Junio'),
-        (7, 'Julio'),
-        (8, 'Agosto'),
-        (9, 'Septiembre'),
-        (10, 'Octubre'),
-        (11, 'Noviembre'),
-        (12, 'Diciembre'),
-    ])
-    start_day = forms.IntegerField(label='Día Inicio', min_value=1, max_value=31)
-
-    end_year = forms.IntegerField(label='Año Fin', min_value=2023)
-    end_month = forms.ChoiceField(label='Mes Fin', choices=[
-        ('', 'Mes'),
-        (1, 'Enero'),
-        (2, 'Febrero'),
-        (3, 'Marzo'),
-        (4, 'Abril'),
-        (5, 'Mayo'),
-        (6, 'Junio'),
-        (7, 'Julio'),
-        (8, 'Agosto'),
-        (9, 'Septiembre'),
-        (10, 'Octubre'),
-        (11, 'Noviembre'),
-        (12, 'Diciembre'),
-    ])
-    end_day = forms.IntegerField(label='Día Fin', min_value=1, max_value=31)
+    start_date = forms.DateField(label='Start date', widget=forms.DateInput(attrs={'type': 'date'}))
+    end_date = forms.DateField(label='End date', widget=forms.DateInput(attrs={'type': 'date'}))
 

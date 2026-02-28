@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Reporte de Ganancias</title>
+    <title>Profit Report</title>
 
     <style type="text/css">
         body {
@@ -125,21 +125,21 @@
 </head>
 <body>
     <header>
-        <p>Reporte de Ganancias - Generado el: {{ current_date|date:'d-m-Y H:i' }}</p>
-        <p>Usuario: {{ username }}</p>
+        <p>Profit Report - Generated on: {{ current_date|date:'d-m-Y H:i' }}</p>
+        <p>User: {{ username }}</p>
     </header>
     <div class="content">
-        <h2>Reporte Diaria de Ganancias</h2>
-        <h2>Reporte del dia {{ day }} de {{month}}, {{ year }}</h2>
+        <h2>Daily Profit Report</h2>
+        <h2>Report for {{ month }} {{ day }}, {{ year }}</h2>
         {% load humanize %}
         <table class="report-table">
             <thead>
                 <tr>
-                    <th class="report-cell report-cell-productos">Productos - Costo/u</th>
-                    <th class="report-cell report-cell-total">Venta Total - Cant. Unidades Vendidas</th>
-                    <th class="report-cell report-cell-cliente">Ganancias Por Ventas</th>
-                    <th class="report-cell report-cell-titems">Compra Total - Cant. Unidades Compradas</th>
-                    <th class="report-cell report-cell-fagregado">Utildades (Ganancias/Perdidas)</th>
+                    <th class="report-cell report-cell-productos">Product - Cost/u</th>
+                    <th class="report-cell report-cell-total">Total Sale - Qty Sold</th>
+                    <th class="report-cell report-cell-cliente">Profit per Sale</th>
+                    <th class="report-cell report-cell-titems">Total Purchase - Qty Purchased</th>
+                    <th class="report-cell report-cell-fagregado">Utilities (Profit/Loss)</th>
                     
                 </tr>
             </thead>
@@ -148,11 +148,11 @@
                 {% for product in sale.products_list %}
                 <tr>
                     
-                    <td>{{ product.product_name }} - {{ product.cost_per_unit|floatformat:2|intcomma }} Bs</td>
-                    <td>{{ sale.costo_total|floatformat:2|intcomma }} Bs - {{ product.total_qty_vendida }} unidades</td>
-                    <td>{{ product.product_ganancia|floatformat:2|intcomma }} Bs </td>
-                    <td>{{ product.total_gasto_compras|floatformat:2|intcomma }}  Bs - {{ product.total_qty_comprada }} unidades</td>
-                    <td>{{ product.ganancia_bruta|floatformat:2|intcomma }} Bs</td> 
+                    <td>{{ product.product_name }} - {{ product.cost_per_unit|floatformat:2|intcomma }}</td>
+                    <td>{{ sale.costo_total|floatformat:2|intcomma }} - {{ product.total_qty_vendida }} units</td>
+                    <td>{{ product.product_ganancia|floatformat:2|intcomma }}</td>
+                    <td>{{ product.total_gasto_compras|floatformat:2|intcomma }} - {{ product.total_qty_comprada }} units</td>
+                    <td>{{ product.ganancia_bruta|floatformat:2|intcomma }}</td>
                     
                 </tr>
                 {% endfor %}
@@ -162,15 +162,15 @@
         
         
         <div class="summary">
-            <h3>Resumen General</h3>
-            <p>Total de Ventas: {{ total_ingresos|floatformat:2|intcomma }} Bs</p>
-            <p>Total de Costos: {{ total_costos|floatformat:2|intcomma }} Bs</p>
-            <p>Ganancias Netas Por Ventas: {{ total_ganancia|floatformat:2|intcomma }} Bs</p>
-            <p>Utilidades(Ganancias/Perdidas): {{ total_utilidades|floatformat:2|intcomma }} Bs</p>
+            <h3>Summary</h3>
+            <p>Total Sales: {{ total_ingresos|floatformat:2|intcomma }}</p>
+            <p>Total Costs: {{ total_costos|floatformat:2|intcomma }}</p>
+            <p>Net Profit from Sales: {{ total_ganancia|floatformat:2|intcomma }}</p>
+            <p>Utilities (Profit/Loss): {{ total_utilidades|floatformat:2|intcomma }}</p>
         </div>
     </div>
     <footer>
-        <p style="text-align: right;">Clave Única: {{ unique_key }}</p>
+        <p style="text-align: right;">Unique Key: {{ unique_key }}</p>
     </footer>
 </body>
 

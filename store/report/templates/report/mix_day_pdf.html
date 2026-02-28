@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Reporte de Ventas Diario</title>
+    <title>Daily Sales Report</title>
     <style>
         body { font-family: Arial, sans-serif; font-size: 12px; }
         table { width: 100%; border-collapse: collapse; }
@@ -11,21 +11,21 @@
     </style>
 </head>
 <body>
-    <h2>Reporte de Ventas Diario</h2>
-    <p>Fecha: {{day_name}}, {{ day }}/{{ month_name }}/{{ year }}</p>
-    <p>Total Clientes: {{ total_clientes }}</p>
-    <p>Total Items Vendidos: {{ total_items_vendidos }}</p>
-    <p>Total Ingresos: {{ total_ingresos }}</p>
-    <p>Total de Ganancias Netas: {{ total_net_profit|floatformat:2 }}</p>
+    <h2>Daily Sales Report</h2>
+    <p>Date: {{day_name}}, {{ day }}/{{ month_name }}/{{ year }}</p>
+    <p>Total Clients: {{ total_clientes }}</p>
+    <p>Total Items Sold: {{ total_items_vendidos }}</p>
+    <p>Total Revenue: {{ total_ingresos }}</p>
+    <p>Total Net Profit: {{ total_net_profit|floatformat:2 }}</p>
     <table>
         <thead>
             <tr>
-                <th>Fecha</th>
-                <th>Cliente</th>
-                <th>Productos Cant. Vendidas</th>
-                <th>Precio Unit. - Coste Unit.</th>
+                <th>Date</th>
+                <th>Client</th>
+                <th>Products - Qty Sold</th>
+                <th>Unit Price - Unit Cost</th>
                 <th>Grand Total</th>
-                <th>Ganancia Neta</th>
+                <th>Net Profit</th>
             </tr>
         </thead>
         <tbody>

@@ -36,12 +36,12 @@ class GenerateExcelProfitView(View):
 
             
             response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = f'attachment; filename="reporte_ganancias_general_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx"'
+            response['Content-Disposition'] = f'attachment; filename="profit_report_general_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx"'
             response.write(excel_file.getvalue())
 
             return response
         else:
-            return HttpResponseBadRequest("Formulario no válido")
+            return HttpResponseBadRequest("Invalid form")
 
     def get_queryset(self, form):
         queryset = Sales.objects.all()
@@ -104,7 +104,7 @@ class GenerateExcelProfitView(View):
                         'total_qty_vendida': total_qty_vendida,
                         'total_qty_comprada': total_qty_comprada,
                         'product_ganancia': product_ganancia,
-                        'ganancia_estado': 'Positiva' if product_ganancia > 0 else ('Negativa' if product_ganancia < 0 else 'Neutra'),
+                        'ganancia_estado': 'Positive' if product_ganancia > 0 else ('Negative' if product_ganancia < 0 else 'Neutral'),
                         'total_gasto_compras': total_gasto_compras,
                         'ganancia_bruta': ganancia_bruta,
                     })
@@ -131,13 +131,13 @@ class GenerateExcelProfitView(View):
     def generate_excel_file(self, sales_data):
         wb = Workbook()
         ws = wb.active
-        ws.title = "Reporte de Ganancias"
+        ws.title = "Profit Report"
 
-        # Encabezado
+        # Headers
         headers = [
-            "Fecha de Venta", "Nombre del Producto", "Costo por Unidad", "Cantidad Vendida",
-            "Cantidad Comprada", "Ganancia por Producto", "Estado de Ganancia", "Total de Gasto en Compras",
-            "Ganancia Bruta"
+            "Sale Date", "Product Name", "Cost per Unit", "Qty Sold",
+            "Qty Purchased", "Profit per Product", "Profit Status", "Total Purchase Cost",
+            "Gross Profit"
         ]
         ws.append(headers)
 
@@ -202,12 +202,12 @@ class YearlyExcelProfitView(View):
 
 
             response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = f'attachment; filename="reporte_ganancias_anual_{year}_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx"'
+            response['Content-Disposition'] = f'attachment; filename="profit_report_yearly_{year}_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx"'
             response.write(excel_file.getvalue())
 
             return response
         else:
-            return HttpResponseBadRequest("Formulario no válido")
+            return HttpResponseBadRequest("Invalid form")
 
     def get_queryset(self, year):
         return Sales.objects.filter(date_added__year=year)
@@ -259,7 +259,7 @@ class YearlyExcelProfitView(View):
                         'total_qty_vendida': total_qty_vendida,
                         'total_qty_comprada': total_qty_comprada,
                         'product_ganancia': product_ganancia,
-                        'ganancia_estado': 'Positiva' if product_ganancia > 0 else ('Negativa' if product_ganancia < 0 else 'Neutra'),
+                        'ganancia_estado': 'Positive' if product_ganancia > 0 else ('Negative' if product_ganancia < 0 else 'Neutral'),
                         'total_gasto_compras': total_gasto_compras,
                         'ganancia_bruta': ganancia_bruta,
                     })
@@ -358,12 +358,12 @@ class MonthlyExcelProfitView(FormView):
 
         
             response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = f'attachment; filename="reporte_ganancias_mensual_{month}_{year}_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx"'
+            response['Content-Disposition'] = f'attachment; filename="profit_report_monthly_{month}_{year}_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx"'
             response.write(excel_file.getvalue())
 
             return response
         else:
-            return HttpResponseBadRequest("Formulario no válido")
+            return HttpResponseBadRequest("Invalid form")
 
     def get_queryset(self, year, month):
         return Sales.objects.filter(date_added__year=year, date_added__month=month)
@@ -442,13 +442,12 @@ class MonthlyExcelProfitView(FormView):
     def generate_excel_file(self, sales_data):
         wb = Workbook()
         ws = wb.active
-        ws.title = "Reporte de Ganancias"
+        ws.title = "Profit Report"
 
-        
         headers = [
-            "Fecha de Venta", "Nombre del Producto", "Costo por Unidad", "Cantidad Vendida",
-            "Cantidad Comprada", "Ganancia por Producto", "Estado de Ganancia", "Total de Gasto en Compras",
-            "Ganancia Bruta"
+            "Sale Date", "Product Name", "Cost per Unit", "Qty Sold",
+            "Qty Purchased", "Profit per Product", "Profit Status", "Total Purchase Cost",
+            "Gross Profit"
         ]
         ws.append(headers)
 
@@ -517,7 +516,7 @@ class DailyExcelProfitView(FormView):
 
         
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename="reporte_ganancias_diaria_{day}_{month}_{year}_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx"'
+        response['Content-Disposition'] = f'attachment; filename="profit_report_daily_{day}_{month}_{year}_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx"'
         response.write(excel_file.getvalue())
 
         return response
@@ -577,7 +576,7 @@ class DailyExcelProfitView(FormView):
                         'total_qty_vendida': total_qty_vendida,
                         'total_qty_comprada': total_qty_comprada,
                         'product_ganancia': product_ganancia,
-                        'ganancia_estado': 'Positiva' if product_ganancia > 0 else ('Negativa' if product_ganancia < 0 else 'Neutra'),
+                        'ganancia_estado': 'Positive' if product_ganancia > 0 else ('Negative' if product_ganancia < 0 else 'Neutral'),
                         'total_gasto_compras': total_gasto_compras,
                         'ganancia_bruta': ganancia_bruta,
                     })
@@ -604,13 +603,12 @@ class DailyExcelProfitView(FormView):
     def generate_excel_file(self, sales_data):
         wb = Workbook()
         ws = wb.active
-        ws.title = "Reporte de Ganancias"
+        ws.title = "Profit Report"
 
-        
         headers = [
-            "Fecha de Venta", "Nombre del Producto", "Costo por Unidad", "Cantidad Vendida",
-            "Cantidad Comprada", "Ganancia por Producto", "Estado de Ganancia", "Total de Gasto en Compras",
-            "Ganancia Bruta"
+            "Sale Date", "Product Name", "Cost per Unit", "Qty Sold",
+            "Qty Purchased", "Profit per Product", "Profit Status", "Total Purchase Cost",
+            "Gross Profit"
         ]
         ws.append(headers)
 

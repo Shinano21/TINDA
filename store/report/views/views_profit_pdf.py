@@ -170,7 +170,7 @@ class GeneratePDFProfitView(View):
 
         pdf_file = self.render_pdf(html_string)
         response = HttpResponse(pdf_file, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="reporte_ganancias_general_{current_date.strftime("%Y%m%d_%H%M%S")}.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="profit_report_general_{current_date.strftime("%Y%m%d_%H%M%S")}.pdf"'
 
         return response
 
@@ -236,7 +236,7 @@ class GeneratePDFProfitView(View):
                         'total_qty_vendida': total_qty_vendida,
                         'total_qty_comprada': total_qty_comprada,
                         'product_ganancia': product_ganancia,
-                        'ganancia_estado': 'Positiva' if product_ganancia > 0 else ('Negativa' if product_ganancia < 0 else 'Neutra'),
+                        'ganancia_estado': 'Positive' if product_ganancia > 0 else ('Negative' if product_ganancia < 0 else 'Neutral'),
                         
                         'total_gasto_compras': total_gasto_compras,
                         'ganancia_bruta': ganancia_bruta,
@@ -314,13 +314,13 @@ class YearlyPDFProfitView(FormView):
         pisa_status = pisa.CreatePDF(io.BytesIO(html_string.encode("UTF-8")), dest=pdf_file, encoding='UTF-8')
 
         if pisa_status.err:
-            return HttpResponse('Hubo errores al generar el PDF.')
+            return HttpResponse('Errors occurred while generating the PDF.')
 
         pdf_file.seek(0)
 
-    
+
         response = HttpResponse(pdf_file, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="reporte_ganancias_anual_{current_date.strftime("%Y%m%d_%H%M%S")}.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="profit_report_yearly_{current_date.strftime("%Y%m%d_%H%M%S")}.pdf"'
 
         return response
 
@@ -365,7 +365,7 @@ class YearlyPDFProfitView(FormView):
                         'total_qty_vendida': total_qty_vendida,
                         'total_qty_comprada': total_qty_comprada,
                         'product_ganancia': product_ganancia,
-                        'ganancia_estado': 'Positiva' if product_ganancia > 0 else ('Negativa' if product_ganancia < 0 else 'Neutra'),
+                        'ganancia_estado': 'Positive' if product_ganancia > 0 else ('Negative' if product_ganancia < 0 else 'Neutral'),
                         'total_gasto_compras': total_gasto_compras,
                         'ganancia_bruta': ganancia_bruta,
                     })
@@ -405,7 +405,7 @@ class MonthlyPDFProfitView(FormView):
             month = int(month)
             month_name = MONTH_CHOICES[month - 1][1]
         except ValueError:
-            return HttpResponseBadRequest("El año o el mes proporcionados no son válidos.")
+            return HttpResponseBadRequest("The provided year or month is not valid.")
 
     
         sales_queryset = Sales.objects.filter(date_added__year=year, date_added__month=month)
@@ -446,13 +446,13 @@ class MonthlyPDFProfitView(FormView):
         pisa_status = pisa.CreatePDF(io.BytesIO(html_string.encode("UTF-8")), dest=pdf_file, encoding='UTF-8')
 
         if pisa_status.err:
-            return HttpResponse('Hubo errores al generar el PDF.')
+            return HttpResponse('Errors occurred while generating the PDF.')
 
         pdf_file.seek(0)
 
-    
+
         response = HttpResponse(pdf_file, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="reporte_ganancias_mensual_{current_date.strftime("%Y%m%d_%H%M%S")}.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="profit_report_monthly_{current_date.strftime("%Y%m%d_%H%M%S")}.pdf"'
 
         return response
 
@@ -500,7 +500,7 @@ class MonthlyPDFProfitView(FormView):
                         'total_qty_vendida': total_qty_vendida,
                         'total_qty_comprada': total_qty_comprada,
                         'product_ganancia': product_ganancia,
-                        'ganancia_estado': 'Positiva' if product_ganancia > 0 else ('Negativa' if product_ganancia < 0 else 'Neutra'),
+                        'ganancia_estado': 'Positive' if product_ganancia > 0 else ('Negative' if product_ganancia < 0 else 'Neutral'),
                         'total_gasto_compras': total_gasto_compras,
                         'ganancia_bruta': ganancia_bruta,
                     })
@@ -540,7 +540,7 @@ class DailyPDFProfitView(FormView):
             month = int(month)
             month_name = MONTH_CHOICES[month - 1][1]
         except ValueError:
-            return HttpResponseBadRequest("El año o el mes proporcionados no son válidos.")
+            return HttpResponseBadRequest("The provided year or month is not valid.")
 
         
         sales_queryset = Sales.objects.filter(date_added__year=year, date_added__month=month, date_added__day=day)
@@ -584,13 +584,13 @@ class DailyPDFProfitView(FormView):
         pisa_status = pisa.CreatePDF(io.BytesIO(html_string.encode("UTF-8")), dest=pdf_file, encoding='UTF-8')
 
         if pisa_status.err:
-            return HttpResponse('Hubo errores al generar el PDF.')
+            return HttpResponse('Errors occurred while generating the PDF.')
 
         pdf_file.seek(0)
 
-    
+
         response = HttpResponse(pdf_file, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="reporte_ganancias_diaria_{current_date.strftime("%Y%m%d_%H%M%S")}.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="profit_report_daily_{current_date.strftime("%Y%m%d_%H%M%S")}.pdf"'
 
         return response
 
@@ -637,7 +637,7 @@ class DailyPDFProfitView(FormView):
                         'total_qty_vendida': total_qty_vendida,
                         'total_qty_comprada': total_qty_comprada,
                         'product_ganancia': product_ganancia,
-                        'ganancia_estado': 'Positiva' if product_ganancia > 0 else ('Negativa' if product_ganancia < 0 else 'Neutra'),
+                        'ganancia_estado': 'Positive' if product_ganancia > 0 else ('Negative' if product_ganancia < 0 else 'Neutral'),
                         'total_gasto_compras': total_gasto_compras,
                         'ganancia_bruta': ganancia_bruta,
                     })

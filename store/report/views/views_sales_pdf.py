@@ -386,15 +386,15 @@ class GeneratePDFSalesDayView(FormView):
     form_class = DayForm
 
     def form_valid(self, form):
-        year = form.cleaned_data['year']
-        month = form.cleaned_data['month']
-        day = form.cleaned_data['day']
+        selected_date = form.cleaned_data['date']
+        year = selected_date.year
+        month = selected_date.month
+        day = selected_date.day
 
-        month_name = MONTH_NAMES[int(month) - 1]
+        month_name = MONTH_NAMES[month - 1]
 
-        
-        if not self.is_valid_day(year, int(month), day):
-            messages.error(self.request, "La fecha ingresada no es válida.")
+        if not self.is_valid_day(year, month, day):
+            messages.error(self.request, "Invalid date entered.")
             return self.form_invalid(form)
 
         sales = Sales.objects.filter(date_added__year=year, date_added__month=month, date_added__day=day)

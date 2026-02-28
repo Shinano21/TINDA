@@ -12,7 +12,7 @@ import uuid
 from django.contrib import messages
 from django.db.models import Sum
 from django.http import HttpResponse, HttpResponseBadRequest
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.template.loader import get_template, render_to_string
 from django.utils import timezone
 from django.views import View
@@ -168,29 +168,30 @@ class MixExcelSalesDayView(FormView):
     form_class = DayForm
 
     def form_valid(self, form):
-        year = int(form.cleaned_data['year'])
-        month = int(form.cleaned_data['month'])
-        day = int(form.cleaned_data['day'])
+        selected_date = form.cleaned_data['date']
+        year = selected_date.year
+        month = selected_date.month
+        day = selected_date.day
 
-    
         start_date = datetime(year, month, day, 3, 0, 0)
         end_date = start_date + timedelta(days=1)
-        date_screen = datetime(year, month ,day)
+        date_screen = datetime(year, month, day)
         month_name = MONTH_NAMES[month - 1]
         
-        day_name_english = start_date.strftime('%A')  
-        day_name = DAYS_OF_WEEK[day_name_english]  
-
-    
-        if not self.is_valid_day(year, month, day):
-            messages.error(self.request, "La fecha ingresada no es válida.")
-            return self.form_invalid(form)
+        day_name_english = start_date.strftime('%A')
+        day_name = DAYS_OF_WEEK[day_name_english]
 
     
         sales = Sales.objects.filter(date_added__gte=start_date, date_added__lt=end_date)
+
+        # If there's no sales data for the selected date, inform the user
+        if not sales.exists():
+            messages.info(self.request, "No data found for the selected date.")
+            return redirect('report:mix_report')
+
         total_clientes = sales.values('id').distinct().count()
-        total_items_vendidos = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
-        total_ingresos = sales.aggregate(total=Sum('grand_total'))['total']
+        total_items_vendidos = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total'] or 0
+        total_ingresos = sales.aggregate(total=Sum('grand_total'))['total'] or 0
 
         sale_details = []
         total_net_profit = Decimal(0)
@@ -218,14 +219,17 @@ class MixExcelSalesDayView(FormView):
 
         return self.generate_excel(sale_details, total_clientes, total_items_vendidos, total_ingresos, total_net_profit, year, month_name, day, day_name, date_screen)
 
+    def form_invalid(self, form):
+        messages.error(self.request, "Invalid input.")
+        return redirect('report:mix_report')
+
     def generate_excel(self, sale_details, total_clientes, total_items_vendidos, total_ingresos, total_net_profit, year, month_name, day, day_name, date_screen):
-        # Crear el archivo Excel
         workbook = Workbook()
         sheet = workbook.active
-        sheet.title = "Reporte de Ventas Diario"
+        sheet.title = "Daily Sales Report"
 
-        # Escribir los encabezados del reporte
-        sheet.append(["Fecha", "Cliente", "Producto", "Cantidad", "Precio", "Costo", "Ganancia Neta"])
+        # Write report headers
+        sheet.append(["Date", "Client", "Product", "Quantity", "Price", "Cost", "Net Profit"])
         for sale in sale_details:
             for product, details in sale['products_list'].items():
                 sheet.append([
@@ -240,15 +244,15 @@ class MixExcelSalesDayView(FormView):
 
     
         sheet.append([])
-        sheet.append(["Total Clientes", total_clientes])
-        sheet.append(["Total Items Vendidos", total_items_vendidos])
-        sheet.append(["Total Ingresos", total_ingresos])
-        sheet.append(["Ganancia Neta Total", total_net_profit])
-        
-        sheet.append(["Fecha para la Solicitud", date_screen.strftime('%Y-%m-%d')])
-    
+        sheet.append(["Total Clients", total_clientes])
+        sheet.append(["Total Items Sold", total_items_vendidos])
+        sheet.append(["Total Revenues", total_ingresos])
+        sheet.append(["Total Net Profit", total_net_profit])
+
+        sheet.append(["Requested Date", date_screen.strftime('%Y-%m-%d')])
+
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename=reporte_cierreventas_diario_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+        response['Content-Disposition'] = f'attachment; filename=daily_sales_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
         
     
         buffer = io.BytesIO()
@@ -270,16 +274,19 @@ class MixTramoExcelSalesDayView(FormView):
     form_class = DayTramoForm
 
     def form_valid(self, form):
-        start_year = int(form.cleaned_data['start_year'])
-        start_month = int(form.cleaned_data['start_month'])
-        start_day = int(form.cleaned_data['start_day'])
-        end_year = int(form.cleaned_data['end_year'])
-        end_month = int(form.cleaned_data['end_month'])
-        end_day = int(form.cleaned_data['end_day'])
+        start_date_field = form.cleaned_data['start_date']
+        end_date_field = form.cleaned_data['end_date']
+
+        start_year = start_date_field.year
+        start_month = start_date_field.month
+        start_day = start_date_field.day
+        end_year = end_date_field.year
+        end_month = end_date_field.month
+        end_day = end_date_field.day
         
     
         if not self.is_valid_date_range(start_year, start_month, start_day, end_year, end_month, end_day):
-            messages.error(self.request, "La fecha de inicio no puede ser mayor que la fecha de fin.")
+            messages.error(self.request, "Start date cannot be greater than end date.")
             return self.form_invalid(form)
 
     
@@ -289,19 +296,24 @@ class MixTramoExcelSalesDayView(FormView):
         end_date_display = datetime(end_year, end_month, end_day)
     
         if not self.is_valid_day(start_year, start_month, start_day) or not self.is_valid_day(end_year, end_month, end_day):
-            messages.error(self.request, "Una de las fechas ingresadas no es válida.")
+            messages.error(self.request, "One of the entered dates is not valid.")
             return self.form_invalid(form)
-        
-        day_name_start_english = start_date.strftime('%A')  
+
+        day_name_start_english = start_date.strftime('%A')
         day_name_start = DAYS_OF_WEEK[day_name_start_english]
         day_name_end_english = end_date_display.strftime('%A')
-        day_name_end = DAYS_OF_WEEK[day_name_end_english]  
-        
-    
+        day_name_end = DAYS_OF_WEEK[day_name_end_english]
+
         sales = Sales.objects.filter(date_added__gte=start_date, date_added__lt=end_date)
+
+        # If there's no sales data for the selected range, inform the user
+        if not sales.exists():
+            messages.info(self.request, "No data found for the selected date range.")
+            return redirect('report:mix_report')
+
         total_clientes = sales.values('id').distinct().count()
-        total_items_vendidos = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
-        total_ingresos = sales.aggregate(total=Sum('grand_total'))['total']
+        total_items_vendidos = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total'] or 0
+        total_ingresos = sales.aggregate(total=Sum('grand_total'))['total'] or 0
 
         sale_details = []
         total_net_profit = Decimal(0)
@@ -329,14 +341,16 @@ class MixTramoExcelSalesDayView(FormView):
 
         return self.generate_excel(sale_details, total_clientes, total_items_vendidos, total_ingresos, total_net_profit, start_year, start_month, start_day, end_year, end_month, end_day, day_name_start, day_name_end, start_screen, end_date_display)
 
+    def form_invalid(self, form):
+        messages.error(self.request, "Invalid input.")
+        return redirect('report:mix_report')
+
     def generate_excel(self, sale_details, total_clientes, total_items_vendidos, total_ingresos, total_net_profit, start_year, start_month, start_day, end_year, end_month, end_day, day_name_start, day_name_end, start_screen, end_date_display):
-    
         workbook = Workbook()
         sheet = workbook.active
-        sheet.title = "Reporte de Ventas Diario"
+        sheet.title = "Sales Report (Range)"
 
-    
-        sheet.append(["Fecha", "Cliente", "Producto", "Cantidad", "Precio", "Costo", "Ganancia Neta"])
+        sheet.append(["Date", "Client", "Product", "Quantity", "Price", "Cost", "Net Profit"])
         for sale in sale_details:
             for product, details in sale['products_list'].items():
                 sheet.append([
@@ -351,16 +365,15 @@ class MixTramoExcelSalesDayView(FormView):
 
     
         sheet.append([])
-        sheet.append(["Total Clientes", total_clientes])
-        sheet.append(["Total Items Vendidos", total_items_vendidos])
-        sheet.append(["Total Ingresos", total_ingresos])
-        sheet.append(["Ganancia Neta Total", total_net_profit])
-        sheet.append(["Fecha Inicio", start_screen.strftime('%Y-%m-%d')])
-        sheet.append(["Fecha Fin", end_date_display.strftime('%Y-%m-%d')])
+        sheet.append(["Total Clients", total_clientes])
+        sheet.append(["Total Items Sold", total_items_vendidos])
+        sheet.append(["Total Revenues", total_ingresos])
+        sheet.append(["Total Net Profit", total_net_profit])
+        sheet.append(["Start Date", start_screen.strftime('%Y-%m-%d')])
+        sheet.append(["End Date", end_date_display.strftime('%Y-%m-%d')])
 
-    
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename=reporte_cierreventas_tramo_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+        response['Content-Disposition'] = f'attachment; filename=sales_report_range_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
         
     
         buffer = io.BytesIO()
