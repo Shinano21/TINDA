@@ -2,15 +2,15 @@
 <div class="container-fluid">
     <form action="" id="checkout-form">
         <div class="form-group mb-3">
-            <label for="payable_amount" class="control-label">Monto a Pagar</label>
+            <label for="payable_amount" class="control-label">Amount to Pay</label>
             <input type="text" id="payable_amount" class="form-control form-control-lg rounded-0 text-end" value="{{ grand_total|intcomma }}" required disabled>
         </div>
         <div class="form-group mb-3">
-            <label for="tendered_amount" class="control-label">Monto recibido</label>
+            <label for="tendered_amount" class="control-label">Tendered Amount</label>
             <input type="number" step="any" id="tendered_amount" class="form-control form-control-lg rounded-0 text-end" value="0" required>
         </div>
         <div class="form-group mb-3">
-            <label for="payment_change" class="control-label">Cambio/Vuelto</label>
+            <label for="payment_change" class="control-label">Change</label>
             <input type="text" id="payment_change" class="form-control form-control-lg rounded-0 text-end" value="{{ 0|intcomma }}" required disabled>
         </div>
     </form>
@@ -34,7 +34,7 @@
         $('#checkout-form').submit(function(e) {
             e.preventDefault();
             if ($('[name="amount_change"]').val() < 0) {
-                alert("Monto recibido debajo de Monto a pagar.")
+                alert("Tendered amount is less than amount to pay.")
                 return false;
             }
             $('#pos-form').submit()

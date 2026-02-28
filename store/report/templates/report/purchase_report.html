@@ -27,26 +27,26 @@
 <div class="mdc-layout-grid__cell stretch-card mdc-layout-grid__cell--span-12">
     <div class="mdc-card py-1">
         <div class="d-flex justify-content-between align-items-center">
-            <h4 class="card-title mb-0">Reporte de Compras</h4>
+            <h4 class="card-title mb-0">Purchase Report</h4>
         </div>
     </div>
 </div>
 
 <div class="mdc-layout-grid__cell stretch-card mdc-layout-grid__cell--span-4">
     <div class="mdc-card py-1">
-        <h5 class="card-title">Reporte Anual</h5>
+        <h5 class="card-title">Yearly Report</h5>
         <form id="yearly-report-form" class="form" method="post" action="{% url 'report:generate_pdf_sales_year' %}">
             {% csrf_token %}
             <div class="mdc-layout-grid">
                 <div class="mdc-layout-grid__inner">
                     <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
-                        <input id="year" type="number" name="year" placeholder="Año"
+                        <input id="year" type="number" name="year" placeholder="Year"
                             class="mdc-text-field__input custom-year-input" min="2023" max="{{ max_year }}">
                     </div>
                 </div>
                 <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6 d-flex justify-content-end align-items-center">
                     <div class="mdc-card py-1">
-                        <h4 class="card-title mb-0">Generar Reportes</h4>
+                        <h4 class="card-title mb-0">Generate Reports</h4>
                         <div class="button-group">
                             <button type="button" onclick="generateYearPDF()" class="mdc-button mdc-button--raised mdc-button--dense mdc-button--outlined icon-button">
                                 <i class="material-icons">picture_as_pdf</i> PDF
@@ -64,36 +64,36 @@
 
 <div class="mdc-layout-grid__cell stretch-card mdc-layout-grid__cell--span-4">
     <div class="mdc-card py-1">
-        <h5 class="card-title">Reporte Mensual</h5>
+        <h5 class="card-title">Monthly Report</h5>
         <form id="monthly-report-form" class="form" method="post" action="{% url 'report:generate_pdf_sales_month' %}">
             {% csrf_token %}
             <div class="mdc-layout-grid">
                 <div class="mdc-layout-grid__inner">
                     <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
-                        <input id="year" type="number" name="year" placeholder="Año"
+                        <input id="year" type="number" name="year" placeholder="Year"
                             class="mdc-text-field__input custom-year-input" min="2023" max="{{ max_year }}">
                     </div>
                     <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
                         <select id="month" name="month" class="mdc-text-field__input custom-month-input">
-                            <option value="" disabled selected>Mes</option>
-                            <option value="1">Enero</option>
-                            <option value="2">Febrero</option>
-                            <option value="3">Marzo</option>
-                            <option value="4">Abril</option>
-                            <option value="5">Mayo</option>
-                            <option value="6">Junio</option>
-                            <option value="7">Julio</option>
-                            <option value="8">Agosto</option>
-                            <option value="9">Septiembre</option>
-                            <option value="10">Octubre</option>
-                            <option value="11">Noviembre</option>
-                            <option value="12">Diciembre</option>
+                            <option value="" disabled selected>Month</option>
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
                         </select>
                     </div>
                 </div>
                 <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6 d-flex justify-content-end align-items-center">
                     <div class="mdc-card py-1">
-                        <h4 class="card-title mb-0">Generar Reportes</h4>
+                        <h4 class="card-title mb-0">Generate Reports</h4>
                         <div class="button-group">
                             <button type="button" onclick="generateMonthPDF()" class="mdc-button mdc-button--raised mdc-button--dense mdc-button--outlined icon-button">
                                 <i class="material-icons">picture_as_pdf</i> PDF
@@ -111,40 +111,40 @@
 
 <div class="mdc-layout-grid__cell stretch-card mdc-layout-grid__cell--span-4">
     <div class="mdc-card py-1">
-        <h5 class="card-title">Reporte Diario</h5>
+        <h5 class="card-title">Daily Report</h5>
         <form id="daily-report-form" class="form" method="post" action="{% url 'report:generatepdf_sales_day' %}">
             {% csrf_token %}
             <div class="mdc-layout-grid">
                 <div class="mdc-layout-grid__inner">
                     <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
-                        <input id="year" type="number" name="year" placeholder="Año"
+                        <input id="year" type="number" name="year" placeholder="Year"
                             class="mdc-text-field__input custom-year-input" min="2023" max="{{ max_year }}">
                     </div>
                     <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
                         <select id="month" name="month" class="mdc-text-field__input custom-month-input">
-                            <option value="" disabled selected>Mes</option>
-                            <option value="1">Enero</option>
-                            <option value="2">Febrero</option>
-                            <option value="3">Marzo</option>
-                            <option value="4">Abril</option>
-                            <option value="5">Mayo</option>
-                            <option value="6">Junio</option>
-                            <option value="7">Julio</option>
-                            <option value="8">Agosto</option>
-                            <option value="9">Septiembre</option>
-                            <option value="10">Octubre</option>
-                            <option value="11">Noviembre</option>
-                            <option value="12">Diciembre</option>
+                            <option value="" disabled selected>Month</option>
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
                         </select>
                     </div>
                     <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
-                        <input id="day" type="number" name="day" placeholder="Día" class="mdc-text-field__input" min="1"
+                        <input id="day" type="number" name="day" placeholder="Day" class="mdc-text-field__input" min="1"
                             max="31">
                     </div>
                 </div>
                 <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6 d-flex justify-content-end align-items-center">
                     <div class="mdc-card py-1">
-                        <h4 class="card-title mb-0">Generar Reportes</h4>
+                        <h4 class="card-title mb-0">Generate Reports</h4>
                         <div class="button-group">
                             <button type="button" onclick="generateDayPDF()" class="mdc-button mdc-button--raised mdc-button--dense mdc-button--outlined icon-button">
                                 <i class="material-icons">picture_as_pdf</i> PDF
@@ -168,15 +168,15 @@
                 <div class="mdc-layout-grid__inner">
                     <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6">
                         <div class="mdc-card py-1">
-                            <h4 class="card-title mb-0">Resumen General</h4>
-                            <p>Total de Proveedores: {{ total_suppliers }}</p>
+                            <h4 class="card-title mb-0">General Summary</h4>
+                            <p>Total Suppliers: {{ total_suppliers }}</p>
                             <p>Quantity of Items Purchased: {{ total_items_purchased }}</p>
-                            <p>Total Costs: {{ total_costs|intcomma }} Bs</p>
+                            <p>Total Costs: {{ total_costs|intcomma }}</p>
                         </div>
                     </div>
                     <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6 d-flex justify-content-end align-items-center">
                         <div class="mdc-card py-1">
-                            <h4 class="card-title mb-0">Generar Reportes</h4>
+                            <h4 class="card-title mb-0">Generate Reports</h4>
                             <div class="button-group">
                                 <a href="{% url 'report:purchase_pdf' %}" target="_blank"
                                     class="mdc-button mdc-button--raised mdc-button--dense mdc-button--outlined icon-button">
@@ -201,11 +201,11 @@
             <table id="miTabla" class="table table-striped table-bordered">
                 <thead>
                     <tr>
-                        <th class="text-center py-1">Proveedores</th>
-                        <th class="text-center py-1">Fecha y Hora</th>
-                        <th class="text-center py-1">Productos - Costo/u</th>
+                        <th class="text-center py-1">Suppliers</th>
+                        <th class="text-center py-1">Date and Time</th>
+                        <th class="text-center py-1">Products - Cost/u</th>
                         <th class="text-center py-1">Total</th>
-                        <th class="text-center py-1">Cantidad Total Items</th>
+                        <th class="text-center py-1">Total Items Count</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -220,7 +220,7 @@
                             {% endfor %}
                             {% endif %}
                         </td>
-                        <td class="px-2 py-1 text-center">{{ purchase.grand_total|floatformat:2 }} Bs</td>
+                        <td class="px-2 py-1 text-center">{{ purchase.grand_total|floatformat:2 }}</td>
                         <td class="px-2 py-1 text-center">{{ purchase.total_items_bought }}</td>
                     </tr>
                     {% endfor %}
@@ -311,7 +311,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             document.querySelectorAll('.view-data').forEach(button => {
                 button.addEventListener('click', function () {
-                    uni_modal("Recibo de la transaccion", `{% url 'pos:receipt-modal' %}?id=${this.dataset.id}`);
+                    uni_modal("Transaction Receipt", `{% url 'pos:receipt-modal' %}?id=${this.dataset.id}`);
                 });
             });
 
@@ -342,12 +342,12 @@
                 if (data.status === 'success') {
                     location.reload();
                 } else {
-                    alert_toast("Ocurrió un Error.", 'error');
+                    alert_toast("An error occurred.", 'error');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert_toast("Ocurrió un Error.", 'error');
+                alert_toast("An error occurred.", 'error');
             })
             .finally(() => {
                 end_loader();

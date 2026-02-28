@@ -48,7 +48,7 @@ class PurchaseProduct(models.Model):
                 quantity_difference = self.qty
             super().save(*args, **kwargs)
 
-            # Actualizar el producto asociado
+            # Update the associated product
             if self.product:
                 self.product.update_quantity_on_purchase(quantity_difference)
                 self.product.update_cost(self.cost)
@@ -57,12 +57,12 @@ class PurchaseProduct(models.Model):
     def delete(self, *args, **kwargs):
         with transaction.atomic():
             if self.product:
-                # Actualizar el producto asociado antes de eliminar la compra
+                # Update the associated product before deleting the purchase
                 self.product.decrease_quantity(self.qty)
                 self.product.update_cost_after_deletion(self.cost)
             super().delete(*args, **kwargs)
             
     def __str__(self):
-        return f"{self.product} de {self.supplier} - {self.qty} @ {self.cost} cada uno"
+        return f"{self.product} from {self.supplier} - {self.qty} @ {self.cost} each"
 
     

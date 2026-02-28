@@ -26,8 +26,8 @@ from report.forms import ReportForm, YearReportForm, MonthReportForm, DayReportF
 
 
 MONTH_NAMES = [
-    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
 ]
 
 def is_leap_year(year):
@@ -52,9 +52,9 @@ class SalesListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['total_clientes'] = Sales.objects.values('id').distinct().count()
-        context['total_items_vendidos'] = SalesItems.objects.aggregate(total=Sum('qty'))['total']
-        context['total_ingresos'] = Sales.objects.aggregate(total=Sum('grand_total'))['total']
+        context['total_customers'] = Sales.objects.values('id').distinct().count()
+        context['total_items_sold'] = SalesItems.objects.aggregate(total=Sum('qty'))['total']
+        context['total_income'] = Sales.objects.aggregate(total=Sum('grand_total'))['total']
         return context
     
     
@@ -66,20 +66,20 @@ class GenerateExcelSalesView(View):
             sales = Sales.objects.all()
 
             
-            total_clientes = Sales.objects.values('id').distinct().count()
+            total_customers = Sales.objects.values('id').distinct().count()
 
             
-            total_items_vendidos = salesItems.objects.aggregate(total=Sum('qty'))['total']
+            total_items_sold = salesItems.objects.aggregate(total=Sum('qty'))['total']
 
             
-            total_ingresos = Sales.objects.aggregate(total=Sum('grand_total'))['total']
+            total_income = Sales.objects.aggregate(total=Sum('grand_total'))['total']
 
             
             wb = Workbook()
             ws = wb.active
 
             
-            headers = ['Cliente', 'Fecha', 'Productos', 'Total', 'Cantidad Total de Ítems']
+            headers = ['Customer', 'Date', 'Products', 'Total', 'Total Items Sold']
             ws.append([''] + headers)
 
             
@@ -93,22 +93,22 @@ class GenerateExcelSalesView(View):
                     else:
                         products_list[product_name] = item.qty
 
-                total_items_sold = sum(products_list.values())
+                total_items_sold_sale = sum(products_list.values())
 
-                # Formatear los datos según sea necesario
+                # Format data as needed
                 sale_data = [
                     '',
-                    sale.cliente,
+                    sale.customer,
                     sale.date_added.strftime('%Y-%m-%d %H:%M'),  
                     ', '.join([f"{product}: {quantity}" for product, quantity in products_list.items()]),  
                     sale.grand_total,
-                    total_items_sold
+                    total_items_sold_sale
                 ]
 
                 ws.append(sale_data)
 
             
-            total_row = ['Total General:', total_clientes, '', '', total_ingresos, total_items_vendidos]
+            total_row = ['Grand Total:', total_customers, '', '', total_income, total_items_sold]
             ws.append(total_row)
 
             
@@ -124,25 +124,25 @@ class GenerateExcelSalesView(View):
             total_general_cell.alignment = Alignment(horizontal='left')
 
             
-            total_clientes_cell = ws['B' + str(ws.max_row)]
-            total_clientes_cell.alignment = Alignment(horizontal='right')
+            total_customers_cell = ws['B' + str(ws.max_row)]
+            total_customers_cell.alignment = Alignment(horizontal='right')
 
-            total_ingresos_cell = ws['E' + str(ws.max_row)]
-            total_ingresos_cell.alignment = Alignment(horizontal='right')
+            total_income_cell = ws['E' + str(ws.max_row)]
+            total_income_cell.alignment = Alignment(horizontal='right')
 
-            total_items_vendidos_cell = ws['F' + str(ws.max_row)]
-            total_items_vendidos_cell.alignment = Alignment(horizontal='right')
+            total_items_sold_cell = ws['F' + str(ws.max_row)]
+            total_items_sold_cell.alignment = Alignment(horizontal='right')
 
             current_date = datetime.now()
             
             response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = f'attachment; filename=reporte_ventas_general_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx'
+            response['Content-Disposition'] = f'attachment; filename=general_sales_report_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx'
 
             wb.save(response)
 
             return response
         else:
-            return HttpResponseBadRequest("Formulario no válido")
+            return HttpResponseBadRequest("Invalid form")
 
 class GenerateExcelSalesYearView(View):
     def post(self, request, *args, **kwargs):
@@ -154,19 +154,19 @@ class GenerateExcelSalesYearView(View):
             sales = Sales.objects.filter(date_added__year=year)
 
             
-            total_clientes = Sales.objects.filter(date_added__year=year).values('id').distinct().count()
+            total_customers = Sales.objects.filter(date_added__year=year).values('id').distinct().count()
 
             
-            total_items_vendidos = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
-            total_ingresos = sales.aggregate(total=Sum('grand_total'))['total']
+            total_items_sold = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
+            total_income = sales.aggregate(total=Sum('grand_total'))['total']
 
             
             wb = Workbook()
             ws = wb.active
 
-            ws.append([f"Reporte de Ventas: del {year}"])
+            ws.append([f"Sales Report: for {year}"])
             
-            headers = ['Cliente', 'Fecha', 'Productos', 'Total', 'Cantidad Total de Ítems']
+            headers = ['Customer', 'Date', 'Products', 'Total', 'Total Items Sold']
             ws.append([''] + headers)
 
             
@@ -180,22 +180,22 @@ class GenerateExcelSalesYearView(View):
                     else:
                         products_list[product_name] = item.qty
 
-                total_items_sold = sum(products_list.values())
+                total_items_sold_sale = sum(products_list.values())
 
                 
                 sale_data = [
                     '',
-                    sale.cliente,
+                    sale.customer,
                     sale.date_added.strftime('%Y-%m-%d %H:%M'),
                     ', '.join([f"{product}: {quantity}" for product, quantity in products_list.items()]),
                     sale.grand_total,
-                    total_items_sold
+                    total_items_sold_sale
                 ]
 
                 ws.append(sale_data)
 
             
-            total_row = ['Total General:', total_clientes, '', '', total_ingresos, total_items_vendidos]
+            total_row = ['Grand Total:', total_customers, '', '', total_income, total_items_sold]
             ws.append(total_row)
 
             
@@ -211,25 +211,25 @@ class GenerateExcelSalesYearView(View):
             total_general_cell.alignment = Alignment(horizontal='center')
 
             
-            total_clientes_cell = ws['B' + str(ws.max_row)]
-            total_clientes_cell.alignment = Alignment(horizontal='center')
+            total_customers_cell = ws['B' + str(ws.max_row)]
+            total_customers_cell.alignment = Alignment(horizontal='center')
 
-            total_ingresos_cell = ws['E' + str(ws.max_row)]
-            total_ingresos_cell.alignment = Alignment(horizontal='center')
+            total_income_cell = ws['E' + str(ws.max_row)]
+            total_income_cell.alignment = Alignment(horizontal='center')
 
-            total_items_vendidos_cell = ws['F' + str(ws.max_row)]
-            total_items_vendidos_cell.alignment = Alignment(horizontal='center')
+            total_items_sold_cell = ws['F' + str(ws.max_row)]
+            total_items_sold_cell.alignment = Alignment(horizontal='center')
 
             current_date = datetime.now()
             
             response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = f'attachment; filename=reporte_ventas_anual_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx'
+            response['Content-Disposition'] = f'attachment; filename=yearly_sales_report_{current_date.strftime("%Y%m%d_%H%M%S")}.xlsx'
 
             wb.save(response)
 
             return response
         else:
-            return HttpResponseBadRequest("Formulario no válido")
+            return HttpResponseBadRequest("Invalid form")
 
 class GenerateExcelSalesMonthView(View):
     def post(self, request, *args, **kwargs):
@@ -241,12 +241,12 @@ class GenerateExcelSalesMonthView(View):
             try:
                 month_name = MONTH_NAMES[month - 1]
             except IndexError:
-                return HttpResponseBadRequest("El mes proporcionado no es válido.")
+                return HttpResponseBadRequest("The provided month is not valid.")
 
             sales = Sales.objects.filter(date_added__year=year, date_added__month=month)
-            total_clientes = sales.values('id').distinct().count()
-            total_items_vendidos = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
-            total_ingresos = sales.aggregate(total=Sum('grand_total'))['total']
+            total_customers = sales.values('id').distinct().count()
+            total_items_sold = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
+            total_income = sales.aggregate(total=Sum('grand_total'))['total']
 
             sale_details = []
             for sale in sales:
@@ -256,7 +256,7 @@ class GenerateExcelSalesMonthView(View):
                     product_name = item.product.name
                     products_list[product_name] = products_list.get(product_name, 0) + item.qty
                 sale_details.append({
-                    'cliente': sale.cliente,
+                    'customer': sale.customer,
                     'date_added': sale.date_added,
                     'products_list': products_list,
                     'grand_total': sale.grand_total,
@@ -266,28 +266,28 @@ class GenerateExcelSalesMonthView(View):
             
             wb = Workbook()
             ws = wb.active
-            ws.append([f"Reporte de Ventas: de {month_name} del {year}"])
+            ws.append([f"Sales Report: for {month_name} {year}"])
             
-            headers = ['Cliente', 'Fecha', 'Productos', 'Total', 'Cantidad Total de Ítems']
+            headers = ['Customer', 'Date', 'Products', 'Total', 'Total Items Sold']
             ws.append([''] + headers)
 
             
             for sale in sale_details:
                 products_list = sale['products_list']
-                total_items_sold = sale['total_items_sold']
+                total_items_sold_sale = sale['total_items_sold']
 
                 sale_data = [
                     '',
-                    sale['cliente'],
+                    sale['customer'],
                     sale['date_added'].strftime('%Y-%m-%d %H:%M'),
                     ', '.join([f"{product}: {quantity}" for product, quantity in products_list.items()]),
                     sale['grand_total'],
-                    total_items_sold
+                    total_items_sold_sale
                 ]
                 ws.append(sale_data)
 
             
-            total_row = ['Total General:', total_clientes, '', '', total_ingresos, total_items_vendidos]
+            total_row = ['Grand Total:', total_customers, '', '', total_income, total_items_sold]
             ws.append(total_row)
 
             
@@ -298,22 +298,22 @@ class GenerateExcelSalesMonthView(View):
                     elif cell.column in [5, 6, 7]:
                         cell.alignment = Alignment(horizontal='center')
 
-            # Alinear la celda "Total General:" a la izquierda
+            # Align "Grand Total:" cell to the center
             total_general_cell = ws['A' + str(ws.max_row)]
             total_general_cell.alignment = Alignment(horizontal='center')
 
-            # Alinear los totales a la derecha
-            total_clientes_cell = ws['B' + str(ws.max_row)]
-            total_clientes_cell.alignment = Alignment(horizontal='center')
+            # Align totals to the center
+            total_customers_cell = ws['B' + str(ws.max_row)]
+            total_customers_cell.alignment = Alignment(horizontal='center')
 
-            total_ingresos_cell = ws['E' + str(ws.max_row)]
-            total_ingresos_cell.alignment = Alignment(horizontal='center')
+            total_income_cell = ws['E' + str(ws.max_row)]
+            total_income_cell.alignment = Alignment(horizontal='center')
 
-            total_items_vendidos_cell = ws['F' + str(ws.max_row)]
-            total_items_vendidos_cell.alignment = Alignment(horizontal='center')
+            total_items_sold_cell = ws['F' + str(ws.max_row)]
+            total_items_sold_cell.alignment = Alignment(horizontal='center')
 
             current_date = datetime.now()
-            filename = f"reporte_ventas_mensual_{current_date.strftime('%Y%m%d_%H%M%S')}.xlsx"
+            filename = f"monthly_sales_report_{current_date.strftime('%Y%m%d_%H%M%S')}.xlsx"
             response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
@@ -321,7 +321,7 @@ class GenerateExcelSalesMonthView(View):
 
             return response
         else:
-            return HttpResponseBadRequest("Formulario no válido")
+            return HttpResponseBadRequest("Invalid form")
 
 
 
@@ -338,17 +338,17 @@ class GenerateExcelSalesDayView(View):
             try:
                 month_name = MONTH_NAMES[month - 1]
             except IndexError:
-                messages.error(self.request, "El mes proporcionado no es válido.")
-                return HttpResponseBadRequest("El mes proporcionado no es válido.")
+                messages.error(self.request, "The provided month is not valid.")
+                return HttpResponseBadRequest("The provided month is not valid.")
 
             if not is_valid_day(year, month, day):
-                messages.error(self.request, "La fecha ingresada no es válida.")
-                return HttpResponseBadRequest("La fecha ingresada no es válida.")
+                messages.error(self.request, "The entered date is not valid.")
+                return HttpResponseBadRequest("The entered date is not valid.")
 
             sales = Sales.objects.filter(date_added__year=year, date_added__month=month, date_added__day=day)
-            total_clientes = sales.values('id').distinct().count()
-            total_items_vendidos = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
-            total_ingresos = sales.aggregate(total=Sum('grand_total'))['total']
+            total_customers = sales.values('id').distinct().count()
+            total_items_sold = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
+            total_income = sales.aggregate(total=Sum('grand_total'))['total']
 
             sale_details = []
             for sale in sales:
@@ -358,7 +358,7 @@ class GenerateExcelSalesDayView(View):
                     product_name = item.product.name
                     products_list[product_name] = products_list.get(product_name, 0) + item.qty
                 sale_details.append({
-                    'cliente': sale.cliente,
+                    'customer': sale.customer,
                     'date_added': sale.date_added,
                     'products_list': products_list,
                     'grand_total': sale.grand_total,
@@ -369,10 +369,10 @@ class GenerateExcelSalesDayView(View):
             wb = Workbook()
             ws = wb.active
 
-            ws.append([f"Reporte de Ventas - Día: {day} de {month_name} del {year}"])
+            ws.append([f"Sales Report - Day: {day} {month_name} {year}"])
             
             
-            headers = ['Cliente', 'Fecha', 'Productos', 'Total', 'Cantidad Total de Ítems']
+            headers = ['Customer', 'Date', 'Products', 'Total', 'Total Items Sold']
             ws.append(['']+ headers)
 
             
@@ -380,7 +380,7 @@ class GenerateExcelSalesDayView(View):
                 products_list = sale['products_list']
                 sale_data = [
                     '',
-                    sale['cliente'],
+                    sale['customer'],
                     sale['date_added'].strftime('%Y-%m-%d %H:%M'),
                     ', '.join([f"{product}: {quantity}" for product, quantity in products_list.items()]),
                     sale['grand_total'],
@@ -389,7 +389,7 @@ class GenerateExcelSalesDayView(View):
                 ws.append(sale_data)
 
             
-            total_row = ['Total General:', total_clientes, '','', total_ingresos, total_items_vendidos]
+            total_row = ['Grand Total:', total_customers, '','', total_income, total_items_sold]
             ws.append(total_row)
 
             
@@ -398,7 +398,7 @@ class GenerateExcelSalesDayView(View):
                     cell.alignment = Alignment(horizontal='center')
 
             current_date = datetime.now()
-            filename = f"reporte_ventas_diario_{current_date.strftime('%Y%m%d_%H%M%S')}.xlsx"
+            filename = f"daily_sales_report_{current_date.strftime('%Y%m%d_%H%M%S')}.xlsx"
             response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
@@ -406,4 +406,4 @@ class GenerateExcelSalesDayView(View):
 
             return response
         else:
-            return HttpResponseBadRequest("Formulario no válido")
+            return HttpResponseBadRequest("Invalid form")

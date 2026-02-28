@@ -49,16 +49,16 @@ class SupplierPDFView(View):
         html = template.render(context)
         
         current_date = datetime.now()
-        # Convertir HTML a PDF
+        # Convert HTML to PDF
         pdf_file = BytesIO()
         pisa_status = pisa.CreatePDF(html, dest=pdf_file)
 
         if pisa_status.err:
-            return HttpResponse('Error al generar el PDF')
+            return HttpResponse('Error generating PDF')
 
-        # Configurar la respuesta HTTP con el PDF generado
+        # Configure HTTP response with generated PDF
         pdf_file.seek(0)
-        filename = f"lista_proveedores_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"suppliers_list_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
         response = HttpResponse(pdf_file, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         
@@ -72,7 +72,7 @@ class SupplierProductPDFView(View):
             'suppliers': suppliers,
             'current_date': timezone.now(),
         }
-        template = get_template('report/mix_supplier_product_pdf.html')  # Ajusta el nombre del template según tu estructura
+        template = get_template('report/mix_supplier_product_pdf.html')
         html = template.render(context)
         
         current_date = datetime.now()
@@ -81,11 +81,11 @@ class SupplierProductPDFView(View):
         pisa_status = pisa.CreatePDF(html, dest=pdf_file)
 
         if pisa_status.err:
-            return HttpResponse('Error al generar el PDF')
+            return HttpResponse('Error generating PDF')
 
         
         pdf_file.seek(0)
-        filename = f"lista_proveedores_productos_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"suppliers_products_list_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
         response = HttpResponse(pdf_file, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         
@@ -106,16 +106,16 @@ class ProductPDFView(View):
         html = template.render(context)
 
         current_date = datetime.now()
-        # Convertir HTML a PDF
+        # Convert HTML to PDF
         pdf_file = BytesIO()
         pisa_status = pisa.CreatePDF(html, dest=pdf_file)
 
         if pisa_status.err:
-            return HttpResponse('Error al generar el PDF')
+            return HttpResponse('Error generating PDF')
 
         
         pdf_file.seek(0)
-        filename = f"lista_productos_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"products_list_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
         response = HttpResponse(pdf_file, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
@@ -139,11 +139,11 @@ class ProductPDFQtyView(View):
         pisa_status = pisa.CreatePDF(html, dest=pdf_file)
 
         if pisa_status.err:
-            return HttpResponse('Error al generar el PDF')
+            return HttpResponse('Error generating PDF')
 
         
         pdf_file.seek(0)
-        filename = f"lista_productos_detalles_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"products_details_list_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
         response = HttpResponse(pdf_file, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
@@ -165,18 +165,17 @@ class MixPDFSalesDayView(FormView):
 
         month_name = MONTH_NAMES[month - 1]
         
-        day_name_english = start_date.strftime('%A')  
-        day_name = DAYS_OF_WEEK[day_name_english]  
+        day_name = start_date.strftime('%A')
         
         if not self.is_valid_day(year, month, day):
-            messages.error(self.request, "La fecha ingresada no es válida.")
+            messages.error(self.request, "The entered date is not valid.")
             return self.form_invalid(form)
 
         
         sales = Sales.objects.filter(date_added__gte=start_date, date_added__lt=end_date)
-        total_clientes = sales.values('id').distinct().count()
-        total_items_vendidos = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
-        total_ingresos = sales.aggregate(total=Sum('grand_total'))['total']
+        total_customers = sales.values('id').distinct().count()
+        total_items_sold = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
+        total_income = sales.aggregate(total=Sum('grand_total'))['total']
 
         sale_details = []
         total_net_profit = Decimal(0)
@@ -195,7 +194,7 @@ class MixPDFSalesDayView(FormView):
                 net_profit_total += item_profit
             total_net_profit += net_profit_total
             sale_details.append({
-                'cliente': sale.cliente,
+                'customer': sale.customer,
                 'date_added': sale.date_added,
                 'products_list': products_list,
                 'grand_total': sale.grand_total,
@@ -207,9 +206,9 @@ class MixPDFSalesDayView(FormView):
 
         html_string = render_to_string('report/mix_day_pdf.html', {
             'sale_data': sale_details,
-            'total_clientes': total_clientes,
-            'total_items_vendidos': total_items_vendidos,
-            'total_ingresos': total_ingresos,
+            'total_customers': total_customers,
+            'total_items_sold': total_items_sold,
+            'total_income': total_income,
             'total_net_profit': total_net_profit,
             'current_date': current_date,
             'username': self.request.user.username,
@@ -228,9 +227,9 @@ class MixPDFSalesDayView(FormView):
         )
 
         if pisa_status.err:
-            return HttpResponse('Hubo errores al generar el PDF.')
+            return HttpResponse('There were errors generating the PDF.')
 
-        filename = f"reporte_cierreventas_diario_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"daily_sales_closure_report_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         response.write(pdf_buffer.getvalue())
@@ -259,7 +258,7 @@ class MixTramoPDFSalesDayView(FormView):
 
         
         if not self.is_valid_date_range(start_year, start_month, start_day, end_year, end_month, end_day):
-            messages.error(self.request, "La fecha de inicio no puede ser mayor que la fecha de fin.")
+            messages.error(self.request, "The start date cannot be greater than the end date.")
             return self.form_invalid(form)
 
         
@@ -269,17 +268,15 @@ class MixTramoPDFSalesDayView(FormView):
         end_date_display = datetime(end_year, end_month, end_day)
         
         if not self.is_valid_day(start_year, start_month, start_day) or not self.is_valid_day(end_year, end_month, end_day):
-            messages.error(self.request, "Una de las fechas ingresadas no es válida.")
+            messages.error(self.request, "One of the entered dates is not valid.")
             return self.form_invalid(form)
-        day_name_start_english = start_date.strftime('%A')  
-        day_name_start = DAYS_OF_WEEK[day_name_start_english]
-        day_name_end_english = end_date_display.strftime('%A')
-        day_name_end = DAYS_OF_WEEK[day_name_end_english]  
+        day_name_start = start_date.strftime('%A')
+        day_name_end = end_date_display.strftime('%A')
         
         sales = Sales.objects.filter(date_added__gte=start_date, date_added__lt=end_date)
-        total_clientes = sales.values('id').distinct().count()
-        total_items_vendidos = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
-        total_ingresos = sales.aggregate(total=Sum('grand_total'))['total']
+        total_customers = sales.values('id').distinct().count()
+        total_items_sold = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
+        total_income = sales.aggregate(total=Sum('grand_total'))['total']
 
         sale_details = []
         total_net_profit = Decimal(0)
@@ -298,7 +295,7 @@ class MixTramoPDFSalesDayView(FormView):
                 net_profit_total += item_profit
             total_net_profit += net_profit_total
             sale_details.append({
-                'cliente': sale.cliente,
+                'customer': sale.customer,
                 'date_added': sale.date_added,
                 'products_list': products_list,
                 'grand_total': sale.grand_total,
@@ -310,9 +307,9 @@ class MixTramoPDFSalesDayView(FormView):
 
         html_string = render_to_string('report/mix_tramo_day_pdf.html', {
             'sale_data': sale_details,
-            'total_clientes': total_clientes,
-            'total_items_vendidos': total_items_vendidos,
-            'total_ingresos': total_ingresos,
+            'total_customers': total_customers,
+            'total_items_sold': total_items_sold,
+            'total_income': total_income,
             'total_net_profit': total_net_profit,
             'current_date': current_date,
             'username': self.request.user.username,
@@ -335,9 +332,9 @@ class MixTramoPDFSalesDayView(FormView):
         )
 
         if pisa_status.err:
-            return HttpResponse('Hubo errores al generar el PDF.')
+            return HttpResponse('There were errors generating the PDF.')
 
-        filename = f"reporte_ventas_tramo_diario_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"daily_sales_range_report_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         response.write(pdf_buffer.getvalue())
@@ -355,5 +352,3 @@ class MixTramoPDFSalesDayView(FormView):
         start_date = datetime(start_year, start_month, start_day)
         end_date = datetime(end_year, end_month, end_day)
         return start_date <= end_date
-
-

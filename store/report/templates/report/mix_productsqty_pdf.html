@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Lista de Productos</title>
+    <title>Products List</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,17 +26,17 @@
     </style>
 </head>
 <body>
-    <h1>Lista de Productos</h1>
-    <p>Fecha de generación: {{ current_date }}</p>
+    <h1>Products List</h1>
+    <p>Generation Date: {{ current_date }}</p>
     <table class="table">
         <thead>
             <tr>
-                <th>Nombre</th>
-                <th>Descripción</th>
-                <th>Fecha de agregado</th>
-                <th>Cantidad</th>
-                <th>Precio</th>
-                <th>Costo</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Date Added</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Cost</th>
             </tr>
         </thead>
         <tbody>
@@ -45,7 +45,7 @@
                 <td>{{ product.name }}</td>
                 <td>{{ product.description }}</td>
                 <td>{{ product.date_added }}</td>
-                <td style="text-align: center;">{{ product.cantidad }}</td>
+                <td style="text-align: center;">{{ product.quantity }}</td>
                 <td style="text-align: center;">{{ product.price }}</td>
                 <td style="text-align: center;">{{ product.cost }}</td>
             </tr>

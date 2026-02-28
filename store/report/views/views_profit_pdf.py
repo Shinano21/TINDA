@@ -1,4 +1,4 @@
-from purchase.models import PurchaseProduct  # Importa el modelo PurchaseProduct
+from purchase.models import PurchaseProduct  # Import the PurchaseProduct model
 from pos.models import Sales, salesItems
 from inventory.models import Products
 from report.forms import *
@@ -53,38 +53,38 @@ class ProfitReportView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         sales = self.get_queryset()
 
-        total_ingresos = self.calculate_total_ingresos(sales)
-        total_costos = self.calculate_total_costos(sales)
+        total_income = self.calculate_total_income(sales)
+        total_costs = self.calculate_total_costs(sales)
 
-        total_ingresos_decimal = Decimal(total_ingresos) if total_ingresos is not None else Decimal('0')
-        total_costos_decimal = Decimal(total_costos) if total_costos is not None else Decimal('0')
+        total_income_decimal = Decimal(total_income) if total_income is not None else Decimal('0')
+        total_costs_decimal = Decimal(total_costs) if total_costs is not None else Decimal('0')
 
-        total_ganancia = total_ingresos_decimal - total_costos_decimal
+        total_profit = total_income_decimal - total_costs_decimal
 
-        context['total_ingresos'] = total_ingresos_decimal
-        context['total_costos'] = total_costos_decimal
-        context['total_ganancia'] = total_ganancia
+        context['total_income'] = total_income_decimal
+        context['total_costs'] = total_costs_decimal
+        context['total_profit'] = total_profit
 
         sales_data = self.get_sales_data(sales)
         context['sales_data'] = sales_data
 
         return context
 
-    def calculate_total_ingresos(self, sales_queryset):
-        total_ingresos = sales_queryset.aggregate(total=Sum('grand_total'))['total']
-        return total_ingresos or Decimal('0')
+    def calculate_total_income(self, sales_queryset):
+        total_income = sales_queryset.aggregate(total=Sum('grand_total'))['total']
+        return total_income or Decimal('0')
 
-    def calculate_total_costos(self, sales_queryset):
-        total_costos = Decimal('0')
+    def calculate_total_costs(self, sales_queryset):
+        total_costs = Decimal('0')
         sales_items = salesItems.objects.filter(sale__in=sales_queryset)
 
         for item in sales_items:
             purchase_product = PurchaseProduct.objects.filter(product=item.product).first()
             if purchase_product:
-                costo_producto = purchase_product.cost
-                total_costos += costo_producto * Decimal(item.qty)
+                product_cost = purchase_product.cost
+                total_costs += product_cost * Decimal(item.qty)
 
-        return total_costos
+        return total_costs
 
     def get_sales_data(self, sales_queryset):
         sales_data = []
@@ -94,18 +94,18 @@ class ProfitReportView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
             for item in sale.salesitems_set.all():
                 purchase_product = PurchaseProduct.objects.filter(product=item.product).first()
                 cost_per_unit = Decimal(purchase_product.cost) if purchase_product else Decimal('0')
-                qty_comprada = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
+                qty_bought = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
 
-                # Añadir entrada de venta
+                # Add sales entry
                 sales_data.append({
                     'date_added': sale.date_added,
                     'product_name': item.product.name,
-                    'qty_vendida': item.qty,
-                    'qty_comprada': 0,
+                    'qty_sold': item.qty,
+                    'qty_bought': 0,
                     'cost': cost_per_unit,
-                    'venta_total': Decimal(item.qty) * Decimal(item.product.price),  # Venta total por producto
-                    'costo_total': sale_cost,
-                    'ganancia': sale_profit,
+                    'total_sale': Decimal(item.qty) * Decimal(item.product.price),  # Total sale per product
+                    'total_cost': sale_cost,
+                    'profit': sale_profit,
                 })
 
 
@@ -113,12 +113,12 @@ class ProfitReportView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
                     sales_data.append({
                         'date_added': purchase_product.date_added,
                         'product_name': item.product.name,
-                        'qty_vendida': 0,
-                        'qty_comprada': qty_comprada,
+                        'qty_sold': 0,
+                        'qty_bought': qty_bought,
                         'cost': cost_per_unit,
-                        'venta_total': 0,
-                        'costo_total': qty_comprada * cost_per_unit,
-                        'ganancia': -qty_comprada * cost_per_unit,
+                        'total_sale': 0,
+                        'total_cost': qty_bought * cost_per_unit,
+                        'profit': -qty_bought * cost_per_unit,
                     })
 
 
@@ -131,8 +131,8 @@ class ProfitReportView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         for item in sale.salesitems_set.all():
             purchase_product = PurchaseProduct.objects.filter(product=item.product).first()
             if purchase_product:
-                costo_producto = Decimal(purchase_product.cost)
-                sale_cost += costo_producto * Decimal(item.qty)
+                product_cost = Decimal(purchase_product.cost)
+                sale_cost += product_cost * Decimal(item.qty)
         return sale_cost
     
 
@@ -142,14 +142,14 @@ class GeneratePDFProfitView(View):
         form = SalesReportForm(request.GET or None)
         sales_queryset = self.get_queryset(form)
 
-        total_ingresos = self.calculate_total_ingresos(sales_queryset)
-        total_costos = self.calculate_total_costos(sales_queryset)
-        total_ingresos_decimal = Decimal(total_ingresos)
-        total_costos_decimal = Decimal(total_costos)
-        total_ganancia = total_ingresos_decimal - total_costos_decimal
+        total_income = self.calculate_total_income(sales_queryset)
+        total_costs = self.calculate_total_costs(sales_queryset)
+        total_income_decimal = Decimal(total_income)
+        total_costs_decimal = Decimal(total_costs)
+        total_profit = total_income_decimal - total_costs_decimal
 
 
-        sales_data, total_utilidades = self.get_sales_data_and_utilities(sales_queryset)
+        sales_data, total_utilities = self.get_sales_data_and_utilities(sales_queryset)
 
         current_date = datetime.now()
         username = request.user.username
@@ -157,10 +157,10 @@ class GeneratePDFProfitView(View):
 
         context = {
             'sales_data': sales_data,
-            'total_ingresos': total_ingresos,
-            'total_costos': total_costos,
-            'total_ganancia': total_ganancia,
-            'total_utilidades': total_utilidades,
+            'total_income': total_income,
+            'total_costs': total_costs,
+            'total_profit': total_profit,
+            'total_utilities': total_utilities,
             'current_date': current_date,
             'username': username,
             'unique_key': unique_key,
@@ -170,7 +170,7 @@ class GeneratePDFProfitView(View):
 
         pdf_file = self.render_pdf(html_string)
         response = HttpResponse(pdf_file, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="reporte_ganancias_general_{current_date.strftime("%Y%m%d_%H%M%S")}.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="general_profit_report_{current_date.strftime("%Y%m%d_%H%M%S")}.pdf"'
 
         return response
 
@@ -188,28 +188,28 @@ class GeneratePDFProfitView(View):
 
         return queryset
 
-    def calculate_total_ingresos(self, sales_queryset):
-        total_ingresos = sales_queryset.aggregate(total=Sum('grand_total'))['total'] or Decimal('0')
-        return total_ingresos
+    def calculate_total_income(self, sales_queryset):
+        total_income = sales_queryset.aggregate(total=Sum('grand_total'))['total'] or Decimal('0')
+        return total_income
 
-    def calculate_total_costos(self, sales_queryset):
-        total_costos = Decimal('0')
+    def calculate_total_costs(self, sales_queryset):
+        total_costs = Decimal('0')
 
         for sale in sales_queryset:
             for item in sale.salesitems_set.all():
                 purchase_product = PurchaseProduct.objects.filter(product=item.product).first()
                 if purchase_product:
-                    costo_producto = purchase_product.cost
-                    qty_comprada = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
-                    costo_total = costo_producto * Decimal(qty_comprada)
-                    total_costos += costo_total
+                    product_cost = purchase_product.cost
+                    qty_bought = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
+                    total_cost = product_cost * Decimal(qty_bought)
+                    total_costs += total_cost
 
-        return total_costos
+        return total_costs
 
     
     def get_sales_data_and_utilities(self, sales_queryset):
         sales_data = []
-        total_utilidades = Decimal(0)
+        total_utilities = Decimal(0)
         
         for sale in sales_queryset:
             sale_cost = self.calculate_sale_cost(sale)
@@ -220,45 +220,45 @@ class GeneratePDFProfitView(View):
                 purchase_product = PurchaseProduct.objects.filter(product=item.product).first()
                 if purchase_product:
                     cost_per_unit = purchase_product.cost
-                    qty_comprada = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
-                    total_qty_vendida = item.qty
-                    total_qty_comprada = qty_comprada
+                    total_qty_bought = sum([pp.qty for pp in PurchaseProduct.objects.filter(product=item.product)])
+                    total_qty_sold = item.qty
+                    total_qty_bought = total_qty_bought
 
-                    product_ganancia = (Decimal(item.qty) * sale_profit) / Decimal(total_qty_vendida)
+                    product_profit = (Decimal(item.qty) * sale_profit) / Decimal(total_qty_sold)
                     
-                    total_gasto_compras = cost_per_unit * Decimal(total_qty_comprada)    
+                    total_purchase_expense = cost_per_unit * Decimal(total_qty_bought)
                     
-                    ganancia_bruta = (sale_cost + product_ganancia) - total_gasto_compras
-                    total_utilidades += ganancia_bruta
+                    gross_profit = (sale_cost + product_profit) - total_purchase_expense
+                    total_utilities += gross_profit
                     products_list.append({
                         'product_name': item.product.name,
                         'cost_per_unit': cost_per_unit,
-                        'total_qty_vendida': total_qty_vendida,
-                        'total_qty_comprada': total_qty_comprada,
-                        'product_ganancia': product_ganancia,
-                        'ganancia_estado': 'Positiva' if product_ganancia > 0 else ('Negativa' if product_ganancia < 0 else 'Neutra'),
+                        'total_qty_sold': total_qty_sold,
+                        'total_qty_bought': total_qty_bought,
+                        'product_profit': product_profit,
+                        'profit_status': 'Positive' if product_profit > 0 else ('Negative' if product_profit < 0 else 'Neutral'),
                         
-                        'total_gasto_compras': total_gasto_compras,
-                        'ganancia_bruta': ganancia_bruta,
+                        'total_purchase_expense': total_purchase_expense,
+                        'gross_profit': gross_profit,
                     })
             
             sales_data.append({
                 'date_added': sale.date_added,
                 'products_list': products_list,
-                'venta_total': Decimal(sale.grand_total),
-                'costo_total': sale_cost,
-                'ganancia_total': sale_profit,
+                'total_sale': Decimal(sale.grand_total),
+                'total_cost': sale_cost,
+                'total_profit': sale_profit,
             })
 
-        return sales_data,total_utilidades
+        return sales_data,total_utilities
 
     def calculate_sale_cost(self, sale):
         sale_cost = Decimal('0')
         for item in sale.salesitems_set.all():
             purchase_product = PurchaseProduct.objects.filter(product=item.product).first()
             if purchase_product:
-                costo_producto = purchase_product.cost
-                sale_cost += costo_producto * Decimal(item.qty)
+                product_cost = purchase_product.cost
+                sale_cost += product_cost * Decimal(item.qty)
         return sale_cost
 
     def render_pdf(self, html_string):
@@ -276,17 +276,17 @@ class YearlyPDFProfitView(FormView):
     def form_valid(self, form):
         year = form.cleaned_data['year']
 
-        # Obtener las ventas filtradas por año
+        # Get sales filtered by year
         sales_queryset = Sales.objects.filter(date_added__year=year)
 
-        # Calcular totales
-        total_ingresos = sales_queryset.aggregate(total=Sum('grand_total'))['total'] or 0
-        total_costos = self.calculate_total_costos(sales_queryset)
-        total_ingresos_decimal = Decimal(total_ingresos)
-        total_costos_decimal = Decimal(total_costos)
-        total_ganancia = total_ingresos_decimal - total_costos_decimal
+        # Calculate totals
+        total_income = sales_queryset.aggregate(total=Sum('grand_total'))['total'] or 0
+        total_costs = self.calculate_total_costs(sales_queryset)
+        total_income_decimal = Decimal(total_income)
+        total_costs_decimal = Decimal(total_costs)
+        total_profit = total_income_decimal - total_costs_decimal
 
-        sales_data, total_utilidades = self.get_sales_data_and_utilities(sales_queryset)
+        sales_data, total_utilities = self.get_sales_data_and_utilities(sales_queryset)
 
 
         current_date = timezone.now()
@@ -296,10 +296,10 @@ class YearlyPDFProfitView(FormView):
     
         context = {
             'sales_data': sales_data,
-            'total_ingresos': total_ingresos,
-            'total_costos': total_costos,
-            'total_ganancia': total_ganancia,
-            'total_utilidades': total_utilidades,
+            'total_income': total_income,
+            'total_costs': total_costs,
+            'total_profit': total_profit,
+            'total_utilities': total_utilities,
             'current_date': current_date,
             'username': username,
             'unique_key': unique_key,
@@ -314,28 +314,28 @@ class YearlyPDFProfitView(FormView):
         pisa_status = pisa.CreatePDF(io.BytesIO(html_string.encode("UTF-8")), dest=pdf_file, encoding='UTF-8')
 
         if pisa_status.err:
-            return HttpResponse('Hubo errores al generar el PDF.')
+            return HttpResponse('There were errors generating the PDF.')
 
         pdf_file.seek(0)
 
     
         response = HttpResponse(pdf_file, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="reporte_ganancias_anual_{current_date.strftime("%Y%m%d_%H%M%S")}.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="yearly_profit_report_{current_date.strftime("%Y%m%d_%H%M%S")}.pdf"'
 
         return response
 
-    def calculate_total_costos(self, sales_queryset):
-        total_costos = 0
+    def calculate_total_costs(self, sales_queryset):
+        total_costs = 0
 
         for sale in sales_queryset:
             sale_cost = self.calculate_sale_cost(sale)
-            total_costos += sale_cost
+            total_costs += sale_cost
 
-        return total_costos
+        return total_costs
 
     def get_sales_data_and_utilities(self, sales_queryset):
         sales_data = []
-        total_utilidades = Decimal(0)
+        total_utilities = Decimal(0)
 
         for sale in sales_queryset:
             sale_items = salesItems.objects.filter(sale=sale)
@@ -346,39 +346,39 @@ class YearlyPDFProfitView(FormView):
 
                 if purchase_product:
                     cost_per_unit = purchase_product.cost
-                    total_qty_comprada = PurchaseProduct.objects.filter(product=item.product).aggregate(total_qty=Sum('qty'))['total_qty'] or 0
-                    total_qty_vendida = item.qty
-                    total_gasto_compras = cost_per_unit * total_qty_comprada
+                    total_qty_bought = PurchaseProduct.objects.filter(product=item.product).aggregate(total_qty=Sum('qty'))['total_qty'] or 0
+                    total_qty_sold = item.qty
+                    total_purchase_expense = cost_per_unit * total_qty_bought
                     
     
-                    product_ganancia = Decimal(sale.grand_total) - (cost_per_unit * total_qty_vendida)
+                    product_profit = Decimal(sale.grand_total) - (cost_per_unit * total_qty_sold)
                     
     
-                    costo_total = self.calculate_sale_cost(sale)
+                    total_cost = self.calculate_sale_cost(sale)
 
     
-                    ganancia_bruta = (costo_total + product_ganancia) - total_gasto_compras
-                    total_utilidades += ganancia_bruta
+                    gross_profit = (total_cost + product_profit) - total_purchase_expense
+                    total_utilities += gross_profit
                     products_list.append({
                         'product_name': item.product.name,
                         'cost_per_unit': cost_per_unit,
-                        'total_qty_vendida': total_qty_vendida,
-                        'total_qty_comprada': total_qty_comprada,
-                        'product_ganancia': product_ganancia,
-                        'ganancia_estado': 'Positiva' if product_ganancia > 0 else ('Negativa' if product_ganancia < 0 else 'Neutra'),
-                        'total_gasto_compras': total_gasto_compras,
-                        'ganancia_bruta': ganancia_bruta,
+                        'total_qty_sold': total_qty_sold,
+                        'total_qty_bought': total_qty_bought,
+                        'product_profit': product_profit,
+                        'profit_status': 'Positive' if product_profit > 0 else ('Negative' if product_profit < 0 else 'Neutral'),
+                        'total_purchase_expense': total_purchase_expense,
+                        'gross_profit': gross_profit,
                     })
 
             sales_data.append({
                 'date_added': sale.date_added,
                 'products_list': products_list,
-                'venta_total': Decimal(sale.grand_total),
-                'costo_total': self.calculate_sale_cost(sale),
-                'ganancia_total': Decimal(sale.grand_total) - self.calculate_sale_cost(sale),
+                'total_sale': Decimal(sale.grand_total),
+                'total_cost': self.calculate_sale_cost(sale),
+                'total_profit': Decimal(sale.grand_total) - self.calculate_sale_cost(sale),
             })
 
-        return sales_data, total_utilidades
+        return sales_data, total_utilities
 
     def calculate_sale_cost(self, sale):
         sale_cost = 0
@@ -405,20 +405,20 @@ class MonthlyPDFProfitView(FormView):
             month = int(month)
             month_name = MONTH_CHOICES[month - 1][1]
         except ValueError:
-            return HttpResponseBadRequest("El año o el mes proporcionados no son válidos.")
+            return HttpResponseBadRequest("The provided year or month are not valid.")
 
     
         sales_queryset = Sales.objects.filter(date_added__year=year, date_added__month=month)
 
 
-        total_ingresos = sales_queryset.aggregate(total=Sum('grand_total'))['total'] or 0
-        total_costos = self.calculate_total_costos(sales_queryset)
-        total_ingresos_decimal = Decimal(total_ingresos)
-        total_costos_decimal = Decimal(total_costos)
-        total_ganancia = total_ingresos_decimal - total_costos_decimal
+        total_income = sales_queryset.aggregate(total=Sum('grand_total'))['total'] or 0
+        total_costs = self.calculate_total_costs(sales_queryset)
+        total_income_decimal = Decimal(total_income)
+        total_costs_decimal = Decimal(total_costs)
+        total_profit = total_income_decimal - total_costs_decimal
 
 
-        sales_data, total_utilidades = self.get_sales_data_and_utilities(sales_queryset)
+        sales_data, total_utilities = self.get_sales_data_and_utilities(sales_queryset)
 
         current_date = timezone.now()
         username = self.request.user.username
@@ -427,10 +427,10 @@ class MonthlyPDFProfitView(FormView):
 
         context = {
             'sales_data': sales_data,
-            'total_ingresos': total_ingresos,
-            'total_costos': total_costos,
-            'total_ganancia': total_ganancia,
-            'total_utilidades': total_utilidades,
+            'total_income': total_income,
+            'total_costs': total_costs,
+            'total_profit': total_profit,
+            'total_utilities': total_utilities,
             'current_date': current_date,
             'username': username,
             'unique_key': unique_key,
@@ -446,29 +446,29 @@ class MonthlyPDFProfitView(FormView):
         pisa_status = pisa.CreatePDF(io.BytesIO(html_string.encode("UTF-8")), dest=pdf_file, encoding='UTF-8')
 
         if pisa_status.err:
-            return HttpResponse('Hubo errores al generar el PDF.')
+            return HttpResponse('There were errors generating the PDF.')
 
         pdf_file.seek(0)
 
     
         response = HttpResponse(pdf_file, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="reporte_ganancias_mensual_{current_date.strftime("%Y%m%d_%H%M%S")}.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="monthly_profit_report_{current_date.strftime("%Y%m%d_%H%M%S")}.pdf"'
 
         return response
 
-    def calculate_total_costos(self, sales_queryset):
-        total_costos = 0
+    def calculate_total_costs(self, sales_queryset):
+        total_costs = 0
 
         for sale in sales_queryset:
             sale_cost = self.calculate_sale_cost(sale)
-            total_costos += sale_cost
+            total_costs += sale_cost
 
-        return total_costos
+        return total_costs
 
     
     def get_sales_data_and_utilities(self, sales_queryset):
         sales_data = []
-        total_utilidades = Decimal(0)
+        total_utilities = Decimal(0)
 
         for sale in sales_queryset:
             sale_items = salesItems.objects.filter(sale=sale)
@@ -479,41 +479,41 @@ class MonthlyPDFProfitView(FormView):
 
                 if purchase_product:
                     cost_per_unit = purchase_product.cost
-                    total_qty_comprada = PurchaseProduct.objects.filter(product=item.product).aggregate(total_qty=Sum('qty'))['total_qty'] or 0
-                    total_qty_vendida = item.qty
-                    total_gasto_compras = cost_per_unit * total_qty_comprada
+                    total_qty_bought = PurchaseProduct.objects.filter(product=item.product).aggregate(total_qty=Sum('qty'))['total_qty'] or 0
+                    total_qty_sold = item.qty
+                    total_purchase_expense = cost_per_unit * total_qty_bought
                     
                 
-                    product_ganancia = Decimal(sale.grand_total) - (cost_per_unit * total_qty_vendida)
+                    product_profit = Decimal(sale.grand_total) - (cost_per_unit * total_qty_sold)
                     
                 
-                    costo_total = self.calculate_sale_cost(sale)
+                    total_cost = self.calculate_sale_cost(sale)
 
                 
-                    ganancia_bruta = (costo_total + product_ganancia) - total_gasto_compras
+                    gross_profit = (total_cost + product_profit) - total_purchase_expense
 
-                    total_utilidades += ganancia_bruta 
+                    total_utilities += gross_profit
                     
                     products_list.append({
                         'product_name': item.product.name,
                         'cost_per_unit': cost_per_unit,
-                        'total_qty_vendida': total_qty_vendida,
-                        'total_qty_comprada': total_qty_comprada,
-                        'product_ganancia': product_ganancia,
-                        'ganancia_estado': 'Positiva' if product_ganancia > 0 else ('Negativa' if product_ganancia < 0 else 'Neutra'),
-                        'total_gasto_compras': total_gasto_compras,
-                        'ganancia_bruta': ganancia_bruta,
+                        'total_qty_sold': total_qty_sold,
+                        'total_qty_bought': total_qty_bought,
+                        'product_profit': product_profit,
+                        'profit_status': 'Positive' if product_profit > 0 else ('Negative' if product_profit < 0 else 'Neutral'),
+                        'total_purchase_expense': total_purchase_expense,
+                        'gross_profit': gross_profit,
                     })
 
             sales_data.append({
                 'date_added': sale.date_added,
                 'products_list': products_list,
-                'venta_total': Decimal(sale.grand_total),
-                'costo_total': self.calculate_sale_cost(sale),
-                'ganancia_total': Decimal(sale.grand_total) - self.calculate_sale_cost(sale),
+                'total_sale': Decimal(sale.grand_total),
+                'total_cost': self.calculate_sale_cost(sale),
+                'total_profit': Decimal(sale.grand_total) - self.calculate_sale_cost(sale),
             })
 
-        return sales_data, total_utilidades
+        return sales_data, total_utilities
 
     def calculate_sale_cost(self, sale):
         sale_cost = 0
@@ -540,21 +540,21 @@ class DailyPDFProfitView(FormView):
             month = int(month)
             month_name = MONTH_CHOICES[month - 1][1]
         except ValueError:
-            return HttpResponseBadRequest("El año o el mes proporcionados no son válidos.")
+            return HttpResponseBadRequest("The provided year or month are not valid.")
 
         
         sales_queryset = Sales.objects.filter(date_added__year=year, date_added__month=month, date_added__day=day)
 
         
-        total_ingresos = sales_queryset.aggregate(total=Sum('grand_total'))['total'] or 0
-        total_costos = self.calculate_total_costos(sales_queryset)
-        total_ingresos_decimal = Decimal(total_ingresos)
-        total_costos_decimal = Decimal(total_costos)
-        total_ganancia = total_ingresos_decimal - total_costos_decimal
+        total_income = sales_queryset.aggregate(total=Sum('grand_total'))['total'] or 0
+        total_costs = self.calculate_total_costs(sales_queryset)
+        total_income_decimal = Decimal(total_income)
+        total_costs_decimal = Decimal(total_costs)
+        total_profit = total_income_decimal - total_costs_decimal
 
 
         
-        sales_data, total_utilidades = self.get_sales_data_and_utilities(sales_queryset)
+        sales_data, total_utilities = self.get_sales_data_and_utilities(sales_queryset)
 
         
         current_date = timezone.now()
@@ -564,10 +564,10 @@ class DailyPDFProfitView(FormView):
         
         context = {
             'sales_data': sales_data,
-            'total_ingresos': total_ingresos,
-            'total_costos': total_costos,
-            'total_ganancia': total_ganancia,
-            'total_utilidades': total_utilidades,
+            'total_income': total_income,
+            'total_costs': total_costs,
+            'total_profit': total_profit,
+            'total_utilities': total_utilities,
             'current_date': current_date,
             'username': username,
             'unique_key': unique_key,
@@ -584,28 +584,28 @@ class DailyPDFProfitView(FormView):
         pisa_status = pisa.CreatePDF(io.BytesIO(html_string.encode("UTF-8")), dest=pdf_file, encoding='UTF-8')
 
         if pisa_status.err:
-            return HttpResponse('Hubo errores al generar el PDF.')
+            return HttpResponse('There were errors generating the PDF.')
 
         pdf_file.seek(0)
 
     
         response = HttpResponse(pdf_file, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="reporte_ganancias_diaria_{current_date.strftime("%Y%m%d_%H%M%S")}.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="daily_profit_report_{current_date.strftime("%Y%m%d_%H%M%S")}.pdf"'
 
         return response
 
-    def calculate_total_costos(self, sales_queryset):
-        total_costos = 0
+    def calculate_total_costs(self, sales_queryset):
+        total_costs = 0
 
         for sale in sales_queryset:
             sale_cost = self.calculate_sale_cost(sale)
-            total_costos += sale_cost
+            total_costs += sale_cost
 
-        return total_costos
+        return total_costs
 
     def get_sales_data_and_utilities(self, sales_queryset):
         sales_data = []
-        total_utilidades = Decimal(0)
+        total_utilities = Decimal(0)
 
         for sale in sales_queryset:
             sale_items = salesItems.objects.filter(sale=sale)
@@ -616,41 +616,41 @@ class DailyPDFProfitView(FormView):
 
                 if purchase_product:
                     cost_per_unit = purchase_product.cost
-                    total_qty_comprada = PurchaseProduct.objects.filter(product=item.product).aggregate(total_qty=Sum('qty'))['total_qty'] or 0
-                    total_qty_vendida = item.qty
-                    total_gasto_compras = cost_per_unit * total_qty_comprada
+                    total_qty_bought = PurchaseProduct.objects.filter(product=item.product).aggregate(total_qty=Sum('qty'))['total_qty'] or 0
+                    total_qty_sold = item.qty
+                    total_purchase_expense = cost_per_unit * total_qty_bought
                     
     
-                    product_ganancia = Decimal(sale.grand_total) - (cost_per_unit * total_qty_vendida)
+                    product_profit = Decimal(sale.grand_total) - (cost_per_unit * total_qty_sold)
                     
     
-                    costo_total = self.calculate_sale_cost(sale)
+                    total_cost = self.calculate_sale_cost(sale)
 
     
-                    ganancia_bruta = (costo_total + product_ganancia) - total_gasto_compras
+                    gross_profit = (total_cost + product_profit) - total_purchase_expense
 
-                    total_utilidades += ganancia_bruta  
+                    total_utilities += gross_profit
 
                     products_list.append({
                         'product_name': item.product.name,
                         'cost_per_unit': cost_per_unit,
-                        'total_qty_vendida': total_qty_vendida,
-                        'total_qty_comprada': total_qty_comprada,
-                        'product_ganancia': product_ganancia,
-                        'ganancia_estado': 'Positiva' if product_ganancia > 0 else ('Negativa' if product_ganancia < 0 else 'Neutra'),
-                        'total_gasto_compras': total_gasto_compras,
-                        'ganancia_bruta': ganancia_bruta,
+                        'total_qty_sold': total_qty_sold,
+                        'total_qty_bought': total_qty_bought,
+                        'product_profit': product_profit,
+                        'profit_status': 'Positive' if product_profit > 0 else ('Negative' if product_profit < 0 else 'Neutral'),
+                        'total_purchase_expense': total_purchase_expense,
+                        'gross_profit': gross_profit,
                     })
 
             sales_data.append({
                 'date_added': sale.date_added,
                 'products_list': products_list,
-                'venta_total': Decimal(sale.grand_total),
-                'costo_total': self.calculate_sale_cost(sale),
-                'ganancia_total': Decimal(sale.grand_total) - self.calculate_sale_cost(sale),
+                'total_sale': Decimal(sale.grand_total),
+                'total_cost': self.calculate_sale_cost(sale),
+                'total_profit': Decimal(sale.grand_total) - self.calculate_sale_cost(sale),
             })
 
-        return sales_data, total_utilidades
+        return sales_data, total_utilities
     
     def calculate_sale_cost(self, sale):
         sale_cost = 0

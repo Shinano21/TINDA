@@ -21,8 +21,8 @@ from django.views.generic.edit import FormView
 
 from openpyxl import Workbook
 from openpyxl.styles import Alignment
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+# from reportlab.lib.pagesizes import letter
+# from reportlab.pdfgen import canvas
 from xhtml2pdf import pisa
 
 from inventory.models import *
@@ -32,8 +32,8 @@ from report.forms import SalesReportForm, YearMonthForm, YearForm, DayForm, Date
 
 
 MONTH_NAMES = [
-    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
 ]
 
 
@@ -92,8 +92,8 @@ class SalesReportView(LoginRequiredMixin, PermissionRequiredMixin,ListView):
         total_items_sold = salesItems.objects.filter(sale__in=self.get_queryset()).aggregate(total=Sum('qty'))['total']
 
 
-        total_ingresos = self.get_queryset().aggregate(total=Sum('grand_total'))['total']
-        total_ingresos = self.format_total(total_ingresos)
+        total_income = self.get_queryset().aggregate(total=Sum('grand_total'))['total']
+        total_income = self.format_total(total_income)
 
 
         sales = self.get_queryset()
@@ -128,7 +128,7 @@ class SalesReportView(LoginRequiredMixin, PermissionRequiredMixin,ListView):
         context['sale_data'] = sale_data
         context['total_customers'] = total_customers
         context['total_items_sold'] = total_items_sold
-        context['total_ingresos'] = total_ingresos
+        context['total_income'] = total_income
 
         return context
 
@@ -144,7 +144,7 @@ class GeneratePDFSalesView(View):
 
         total_customers = Sales.objects.values('id').distinct().count()
         total_items_sold = 0
-        total_ingresos = sum(sale.grand_total for sale in sale_data)
+        total_income = sum(sale.grand_total for sale in sale_data)
 
         sale_details = []
 
@@ -161,7 +161,7 @@ class GeneratePDFSalesView(View):
                 total_items_sold += item.qty
 
             sale_details.append({
-                'customer': sale.cliente,
+                'customer': sale.customer,
                 'date_added': sale.date_added,
                 'products_list': products_list,
                 'grand_total': sale.grand_total,
@@ -176,7 +176,7 @@ class GeneratePDFSalesView(View):
             'sale_data': sale_details,
             'total_customers': total_customers,
             'total_items_sold': total_items_sold,
-            'total_ingresos': total_ingresos,
+            'total_income': total_income,
             'current_date': current_date,
             'username': user.username,  
             'unique_key': unique_key,  
@@ -192,7 +192,7 @@ class GeneratePDFSalesView(View):
             return HttpResponse('We had some errors <pre>' + html_string + '</pre>')
 
 
-        filename = f"reporte_ventas_general_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"general_sales_report_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
 
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
@@ -209,9 +209,9 @@ class GeneratePDFSalesYearView(FormView):
         year = form.cleaned_data['year']
         
         sales = Sales.objects.filter(date_added__year=year)
-        total_clientes = sales.values('cliente').distinct().count()
-        total_items_vendidos = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
-        total_ingresos = sales.aggregate(total=Sum('grand_total'))['total']
+        total_customers = sales.values('customer').distinct().count()
+        total_items_sold = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
+        total_income = sales.aggregate(total=Sum('grand_total'))['total']
 
         
         sale_details = []
@@ -222,7 +222,7 @@ class GeneratePDFSalesYearView(FormView):
                 product_name = item.product.name
                 products_list[product_name] = products_list.get(product_name, 0) + item.qty
             sale_details.append({
-                'cliente': sale.cliente,
+                'customer': sale.customer,
                 'date_added': sale.date_added,
                 'products_list': products_list,
                 'grand_total': sale.grand_total,
@@ -234,9 +234,9 @@ class GeneratePDFSalesYearView(FormView):
         unique_key = str(uuid.uuid4())
         html_string = render_to_string('report/sales_pdf_year.html', {
             'sale_data': sale_details,
-            'total_clientes': total_clientes,
-            'total_items_vendidos': total_items_vendidos,
-            'total_ingresos': total_ingresos,
+            'total_customers': total_customers,
+            'total_items_sold': total_items_sold,
+            'total_income': total_income,
             'current_date': current_date,
             'username': self.request.user.username,
             'unique_key': unique_key,
@@ -247,9 +247,9 @@ class GeneratePDFSalesYearView(FormView):
         pisa_status = pisa.CreatePDF(io.BytesIO(html_string.encode("UTF-8")), dest=pdf_buffer, encoding='UTF-8')
 
         if pisa_status.err:
-            return HttpResponse('Hubo errores al generar el PDF.')
+            return HttpResponse('There were errors generating the PDF.')
 
-        filename = f"reporte_ventas_anual_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"yearly_sales_report_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         response.write(pdf_buffer.getvalue())
@@ -269,12 +269,12 @@ class GeneratePDFSalesMonthView(FormView):
             month = int(month)
             month_name = MONTH_CHOICES[month - 1][1]
         except ValueError:
-            return HttpResponseBadRequest("El año o el mes proporcionados no son válidos.")
+            return HttpResponseBadRequest("The provided year or month are not valid.")
 
         sales = Sales.objects.filter(date_added__year=year, date_added__month=month)
-        total_clientes = sales.values('id').distinct().count()
-        total_items_vendidos = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
-        total_ingresos = sales.aggregate(total=Sum('grand_total'))['total']
+        total_customers = sales.values('id').distinct().count()
+        total_items_sold = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
+        total_income = sales.aggregate(total=Sum('grand_total'))['total']
 
         sale_details = []
         for sale in sales:
@@ -284,7 +284,7 @@ class GeneratePDFSalesMonthView(FormView):
                 product_name = item.product.name
                 products_list[product_name] = products_list.get(product_name, 0) + item.qty
             sale_details.append({
-                'cliente': sale.cliente,
+                'customer': sale.customer,
                 'date_added': sale.date_added,
                 'products_list': products_list,
                 'grand_total': sale.grand_total,
@@ -296,9 +296,9 @@ class GeneratePDFSalesMonthView(FormView):
 
         html_string = render_to_string('report/sales_pdf_month.html', {
             'sale_data': sale_details,
-            'total_clientes': total_clientes,
-            'total_items_vendidos': total_items_vendidos,
-            'total_ingresos': total_ingresos,
+            'total_customers': total_customers,
+            'total_items_sold': total_items_sold,
+            'total_income': total_income,
             'current_date': current_date,
             'username': self.request.user.username,
             'unique_key': unique_key,
@@ -310,9 +310,9 @@ class GeneratePDFSalesMonthView(FormView):
         pisa_status = pisa.CreatePDF(io.BytesIO(html_string.encode("UTF-8")), dest=pdf_buffer, encoding='UTF-8')
 
         if pisa_status.err:
-            return HttpResponse('Hubo errores al generar el PDF.')
+            return HttpResponse('There were errors generating the PDF.')
 
-        filename = f"reporte_ventas_mensual_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"monthly_sales_report_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         response.write(pdf_buffer.getvalue())
@@ -325,16 +325,16 @@ class SalesReportCustomView(FormView):
     template_name = 'report/sales_report.html'
 
     def form_valid(self, form):
-        fecha_desde = form.cleaned_data['fecha_desde']
-        fecha_hasta = form.cleaned_data['fecha_hasta']
+        start_date = form.cleaned_data['start_date']
+        end_date = form.cleaned_data['end_date']
 
-        if fecha_desde > fecha_hasta:
-            return HttpResponseBadRequest("La fecha de inicio no puede ser mayor que la fecha de fin.")
+        if start_date > end_date:
+            return HttpResponseBadRequest("The start date cannot be greater than the end date.")
 
-        sales = Sales.objects.filter(date_added__range=(fecha_desde, fecha_hasta))
-        total_clientes = sales.values('id').distinct().count()
-        total_items_vendidos = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
-        total_ingresos = sales.aggregate(total=Sum('grand_total'))['total']
+        sales = Sales.objects.filter(date_added__range=(start_date, end_date))
+        total_customers = sales.values('id').distinct().count()
+        total_items_sold = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
+        total_income = sales.aggregate(total=Sum('grand_total'))['total']
 
         sale_details = []
         for sale in sales:
@@ -344,7 +344,7 @@ class SalesReportCustomView(FormView):
                 product_name = item.product.name
                 products_list[product_name] = products_list.get(product_name, 0) + item.qty
             sale_details.append({
-                'cliente': sale.cliente,
+                'customer': sale.customer,
                 'date_added': sale.date_added,
                 'products_list': products_list,
                 'grand_total': sale.grand_total,
@@ -356,23 +356,23 @@ class SalesReportCustomView(FormView):
 
         html_string = render_to_string('posApp/sales_pdf_custom.html', {
             'sale_data': sale_details,
-            'total_clientes': total_clientes,
-            'total_items_vendidos': total_items_vendidos,
-            'total_ingresos': total_ingresos,
+            'total_customers': total_customers,
+            'total_items_sold': total_items_sold,
+            'total_income': total_income,
             'current_date': current_date,
             'username': self.request.user.username,
             'unique_key': unique_key,
-            'fecha_desde': fecha_desde,
-            'fecha_hasta': fecha_hasta,
+            'start_date': start_date,
+            'end_date': end_date,
         })
 
         pdf_buffer = io.BytesIO()
         pisa_status = pisa.CreatePDF(io.BytesIO(html_string.encode("UTF-8")), dest=pdf_buffer, encoding='UTF-8')
 
         if pisa_status.err:
-            return HttpResponse('Hubo errores al generar el PDF.')
+            return HttpResponse('There were errors generating the PDF.')
 
-        filename = f"reporte_ventas_personalizado_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"custom_sales_report_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         response.write(pdf_buffer.getvalue())
@@ -394,13 +394,13 @@ class GeneratePDFSalesDayView(FormView):
 
         
         if not self.is_valid_day(year, int(month), day):
-            messages.error(self.request, "La fecha ingresada no es válida.")
+            messages.error(self.request, "The entered date is not valid.")
             return self.form_invalid(form)
 
         sales = Sales.objects.filter(date_added__year=year, date_added__month=month, date_added__day=day)
-        total_clientes = sales.values('id').distinct().count()
-        total_items_vendidos = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
-        total_ingresos = sales.aggregate(total=Sum('grand_total'))['total']
+        total_customers = sales.values('id').distinct().count()
+        total_items_sold = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
+        total_income = sales.aggregate(total=Sum('grand_total'))['total']
 
         sale_details = []
         for sale in sales:
@@ -410,7 +410,7 @@ class GeneratePDFSalesDayView(FormView):
                 product_name = item.product.name
                 products_list[product_name] = products_list.get(product_name, 0) + item.qty
             sale_details.append({
-                'cliente': sale.cliente,
+                'customer': sale.customer,
                 'date_added': sale.date_added,
                 'products_list': products_list,
                 'grand_total': sale.grand_total,
@@ -422,9 +422,9 @@ class GeneratePDFSalesDayView(FormView):
 
         html_string = render_to_string('report/sales_pdf_day.html', {
             'sale_data': sale_details,
-            'total_clientes': total_clientes,
-            'total_items_vendidos': total_items_vendidos,
-            'total_ingresos': total_ingresos,
+            'total_customers': total_customers,
+            'total_items_sold': total_items_sold,
+            'total_income': total_income,
             'current_date': current_date,
             'username': self.request.user.username,
             'unique_key': unique_key,
@@ -441,9 +441,9 @@ class GeneratePDFSalesDayView(FormView):
         )
 
         if pisa_status.err:
-            return HttpResponse('Hubo errores al generar el PDF.')
+            return HttpResponse('There were errors generating the PDF.')
 
-        filename = f"reporte_ventas_diario_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"daily_sales_report_{current_date.strftime('%Y%m%d_%H%M%S')}.pdf"
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         response.write(pdf_buffer.getvalue())

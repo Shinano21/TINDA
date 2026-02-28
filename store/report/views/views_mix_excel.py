@@ -1,4 +1,4 @@
-from purchase.models import *  # Importa el modelo PurchaseProduct
+from purchase.models import *  # Import the PurchaseProduct model
 from pos.models import *
 from inventory.models import *
 from report.forms import *
@@ -29,10 +29,10 @@ class SupplierExcelView(View):
 
         wb = Workbook()
         ws = wb.active
-        ws.title = "Proveedores"
+        ws.title = "Suppliers"
 
 
-        headers = ['Proveedor', 'Información de contacto', 'Fecha de registro']
+        headers = ['Supplier', 'Contact Information', 'Registration Date']
         ws.append(headers)
 
 
@@ -46,7 +46,7 @@ class SupplierExcelView(View):
 
 
         current_date = datetime.now()
-        filename = f"lista_proveedores_{current_date.strftime('%Y%m%d_%H%M%S')}.xlsx"
+        filename = f"suppliers_list_{current_date.strftime('%Y%m%d_%H%M%S')}.xlsx"
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
@@ -61,10 +61,10 @@ class SupplierProductExcelView(View):
         
         wb = Workbook()
         ws = wb.active
-        ws.title = "Proveedores y Productos"
+        ws.title = "Suppliers and Products"
 
         
-        headers = ['Proveedor', 'Producto', 'Costo', 'Cantidad', 'Fecha de Adquisición']
+        headers = ['Supplier', 'Product', 'Cost', 'Quantity', 'Acquisition Date']
         ws.append(headers)
 
         
@@ -82,7 +82,7 @@ class SupplierProductExcelView(View):
 
         
         current_date = datetime.now()
-        filename = f"lista_proveedores_productos_{current_date.strftime('%Y%m%d_%H%M%S')}.xlsx"
+        filename = f"suppliers_products_list_{current_date.strftime('%Y%m%d_%H%M%S')}.xlsx"
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
@@ -99,24 +99,24 @@ class ProductExcelView(View):
 
         wb = openpyxl.Workbook()
         ws = wb.active
-        ws.title = "Productos"
+        ws.title = "Products"
 
 
-        headers = ['Nombre', 'Descripción', 'Fecha agregado']
+        headers = ['Name', 'Description', 'Date Added']
         ws.append(headers)
 
 
         for product in products:
             product_data = [
                 product.name,
-                product.description,
+                product.descriptiontion,
                 product.date_added.strftime('%Y-%m-%d %H:%M:%S'),
             ]
             ws.append(product_data)
 
 
         current_date = datetime.now()
-        filename = f"lista_productos_{current_date.strftime('%Y%m%d_%H%M%S')}.xlsx"
+        filename = f"products_list_{current_date.strftime('%Y%m%d_%H%M%S')}.xlsx"
 
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
@@ -133,19 +133,19 @@ class ProductQtyExcelView(View):
 
         wb = openpyxl.Workbook()
         ws = wb.active
-        ws.title = "Productos"
+        ws.title = "Products"
 
     
-        headers = ['Nombre', 'Descripción', 'Fecha de agregado', 'Cantidad', 'Precio', 'Costo']
+        headers = ['Name', 'Description', 'Date Added', 'Quantity', 'Price', 'Cost']
         ws.append(headers)
 
 
         for product in products:
             product_data = [
                 product.name,
-                product.description,
+                product.descriptiontion,
                 product.date_added.strftime('%Y-%m-%d %H:%M:%S'),
-                product.cantidad,
+                product.quantity,
                 product.price,
                 product.cost,
             ]
@@ -153,7 +153,7 @@ class ProductQtyExcelView(View):
 
 
         current_date = datetime.now()
-        filename = f"lista_productos_detalles_{current_date.strftime('%Y%m%d_%H%M%S')}.xlsx"
+        filename = f"products_details_list_{current_date.strftime('%Y%m%d_%H%M%S')}.xlsx"
 
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
@@ -178,19 +178,18 @@ class MixExcelSalesDayView(FormView):
         date_screen = datetime(year, month ,day)
         month_name = MONTH_NAMES[month - 1]
         
-        day_name_english = start_date.strftime('%A')  
-        day_name = DAYS_OF_WEEK[day_name_english]  
+        day_name = start_date.strftime('%A')
 
     
         if not self.is_valid_day(year, month, day):
-            messages.error(self.request, "La fecha ingresada no es válida.")
+            messages.error(self.request, "The entered date is not valid.")
             return self.form_invalid(form)
 
     
         sales = Sales.objects.filter(date_added__gte=start_date, date_added__lt=end_date)
-        total_clientes = sales.values('id').distinct().count()
-        total_items_vendidos = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
-        total_ingresos = sales.aggregate(total=Sum('grand_total'))['total']
+        total_customers = sales.values('id').distinct().count()
+        total_items_sold = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
+        total_income = sales.aggregate(total=Sum('grand_total'))['total']
 
         sale_details = []
         total_net_profit = Decimal(0)
@@ -209,28 +208,28 @@ class MixExcelSalesDayView(FormView):
                 net_profit_total += item_profit
             total_net_profit += net_profit_total
             sale_details.append({
-                'cliente': sale.cliente,
+                'customer': sale.customer,
                 'date_added': sale.date_added,
                 'products_list': products_list,
                 'grand_total': sale.grand_total,
                 'net_profit': net_profit_total
             })
 
-        return self.generate_excel(sale_details, total_clientes, total_items_vendidos, total_ingresos, total_net_profit, year, month_name, day, day_name, date_screen)
+        return self.generate_excel(sale_details, total_customers, total_items_sold, total_income, total_net_profit, year, month_name, day, day_name, date_screen)
 
-    def generate_excel(self, sale_details, total_clientes, total_items_vendidos, total_ingresos, total_net_profit, year, month_name, day, day_name, date_screen):
-        # Crear el archivo Excel
+    def generate_excel(self, sale_details, total_customers, total_items_sold, total_income, total_net_profit, year, month_name, day, day_name, date_screen):
+        # Create Excel file
         workbook = Workbook()
         sheet = workbook.active
-        sheet.title = "Reporte de Ventas Diario"
+        sheet.title = "Daily Sales Report"
 
-        # Escribir los encabezados del reporte
-        sheet.append(["Fecha", "Cliente", "Producto", "Cantidad", "Precio", "Costo", "Ganancia Neta"])
+        # Write report headers
+        sheet.append(["Date", "Customer", "Product", "Quantity", "Price", "Cost", "Net Profit"])
         for sale in sale_details:
             for product, details in sale['products_list'].items():
                 sheet.append([
                     sale['date_added'].strftime('%Y-%m-%d %H:%M:%S'),
-                    sale['cliente'],
+                    sale['customer'],
                     product,
                     details['qty'],
                     details['price'],
@@ -240,15 +239,15 @@ class MixExcelSalesDayView(FormView):
 
     
         sheet.append([])
-        sheet.append(["Total Clientes", total_clientes])
-        sheet.append(["Total Items Vendidos", total_items_vendidos])
-        sheet.append(["Total Ingresos", total_ingresos])
-        sheet.append(["Ganancia Neta Total", total_net_profit])
+        sheet.append(["Total Customers", total_customers])
+        sheet.append(["Total Items Sold", total_items_sold])
+        sheet.append(["Total Income", total_income])
+        sheet.append(["Total Net Profit", total_net_profit])
         
-        sheet.append(["Fecha para la Solicitud", date_screen.strftime('%Y-%m-%d')])
+        sheet.append(["Request Date", date_screen.strftime('%Y-%m-%d')])
     
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename=reporte_cierreventas_diario_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+        response['Content-Disposition'] = f'attachment; filename=daily_sales_closure_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
         
     
         buffer = io.BytesIO()
@@ -279,7 +278,7 @@ class MixTramoExcelSalesDayView(FormView):
         
     
         if not self.is_valid_date_range(start_year, start_month, start_day, end_year, end_month, end_day):
-            messages.error(self.request, "La fecha de inicio no puede ser mayor que la fecha de fin.")
+            messages.error(self.request, "The start date cannot be greater than the end date.")
             return self.form_invalid(form)
 
     
@@ -289,19 +288,17 @@ class MixTramoExcelSalesDayView(FormView):
         end_date_display = datetime(end_year, end_month, end_day)
     
         if not self.is_valid_day(start_year, start_month, start_day) or not self.is_valid_day(end_year, end_month, end_day):
-            messages.error(self.request, "Una de las fechas ingresadas no es válida.")
+            messages.error(self.request, "One of the entered dates is not valid.")
             return self.form_invalid(form)
         
-        day_name_start_english = start_date.strftime('%A')  
-        day_name_start = DAYS_OF_WEEK[day_name_start_english]
-        day_name_end_english = end_date_display.strftime('%A')
-        day_name_end = DAYS_OF_WEEK[day_name_end_english]  
+        day_name_start = start_date.strftime('%A')
+        day_name_end = end_date_display.strftime('%A')
         
     
         sales = Sales.objects.filter(date_added__gte=start_date, date_added__lt=end_date)
-        total_clientes = sales.values('id').distinct().count()
-        total_items_vendidos = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
-        total_ingresos = sales.aggregate(total=Sum('grand_total'))['total']
+        total_customers = sales.values('id').distinct().count()
+        total_items_sold = salesItems.objects.filter(sale__in=sales).aggregate(total=Sum('qty'))['total']
+        total_income = sales.aggregate(total=Sum('grand_total'))['total']
 
         sale_details = []
         total_net_profit = Decimal(0)
@@ -320,28 +317,28 @@ class MixTramoExcelSalesDayView(FormView):
                 net_profit_total += item_profit
             total_net_profit += net_profit_total
             sale_details.append({
-                'cliente': sale.cliente,
+                'customer': sale.customer,
                 'date_added': sale.date_added,
                 'products_list': products_list,
                 'grand_total': sale.grand_total,
                 'net_profit': net_profit_total
             })
 
-        return self.generate_excel(sale_details, total_clientes, total_items_vendidos, total_ingresos, total_net_profit, start_year, start_month, start_day, end_year, end_month, end_day, day_name_start, day_name_end, start_screen, end_date_display)
+        return self.generate_excel(sale_details, total_customers, total_items_sold, total_income, total_net_profit, start_year, start_month, start_day, end_year, end_month, end_day, day_name_start, day_name_end, start_screen, end_date_display)
 
-    def generate_excel(self, sale_details, total_clientes, total_items_vendidos, total_ingresos, total_net_profit, start_year, start_month, start_day, end_year, end_month, end_day, day_name_start, day_name_end, start_screen, end_date_display):
+    def generate_excel(self, sale_details, total_customers, total_items_sold, total_income, total_net_profit, start_year, start_month, start_day, end_year, end_month, end_day, day_name_start, day_name_end, start_screen, end_date_display):
     
         workbook = Workbook()
         sheet = workbook.active
-        sheet.title = "Reporte de Ventas Diario"
+        sheet.title = "Sales Range Report"
 
     
-        sheet.append(["Fecha", "Cliente", "Producto", "Cantidad", "Precio", "Costo", "Ganancia Neta"])
+        sheet.append(["Date", "Customer", "Product", "Quantity", "Price", "Cost", "Net Profit"])
         for sale in sale_details:
             for product, details in sale['products_list'].items():
                 sheet.append([
                     sale['date_added'].strftime('%Y-%m-%d %H:%M:%S'),
-                    sale['cliente'],
+                    sale['customer'],
                     product,
                     details['qty'],
                     details['price'],
@@ -351,16 +348,16 @@ class MixTramoExcelSalesDayView(FormView):
 
     
         sheet.append([])
-        sheet.append(["Total Clientes", total_clientes])
-        sheet.append(["Total Items Vendidos", total_items_vendidos])
-        sheet.append(["Total Ingresos", total_ingresos])
-        sheet.append(["Ganancia Neta Total", total_net_profit])
-        sheet.append(["Fecha Inicio", start_screen.strftime('%Y-%m-%d')])
-        sheet.append(["Fecha Fin", end_date_display.strftime('%Y-%m-%d')])
+        sheet.append(["Total Customers", total_customers])
+        sheet.append(["Total Items Sold", total_items_sold])
+        sheet.append(["Total Income", total_income])
+        sheet.append(["Total Net Profit", total_net_profit])
+        sheet.append(["Start Date", start_screen.strftime('%Y-%m-%d')])
+        sheet.append(["End Date", end_date_display.strftime('%Y-%m-%d')])
 
     
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename=reporte_cierreventas_tramo_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+        response['Content-Disposition'] = f'attachment; filename=sales_range_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
         
     
         buffer = io.BytesIO()
