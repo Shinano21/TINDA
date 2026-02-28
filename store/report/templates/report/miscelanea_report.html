@@ -107,7 +107,11 @@
             </div>
             
             <div class="mdc-layout-grid__cell">
+<<<<<<< HEAD
                     <div class="mdc-card py-1">
+=======
+                <div class="mdc-card py-1">
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
                     <h4 class="card-title mb-0">Suppliers and Products</h4>
                     <div class="button-group">
                         <a href="{% url 'report:supplier_product_pdf' %}" class="mdc-button mdc-button--raised mdc-button--dense mdc-button--outlined icon-button" target="_blank">
@@ -125,12 +129,20 @@
 
 <div class="mdc-layout-grid__cell stretch-card mdc-layout-grid__cell--span-4">
     <div class="mdc-card py-1">
+<<<<<<< HEAD
         <h5 class="card-title">Product List</h5>
+=======
+        <h5 class="card-title">Products List</h5>
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
         
             <div class="mdc-layout-grid mdc-layout-grid--horizontal">
                 <div class="mdc-layout-grid__cell">
                     <div class="mdc-card py-1">
+<<<<<<< HEAD
                         <h4 class="card-title mb-0">Flat Product List</h4>
+=======
+                        <h4 class="card-title mb-0">Flat List Products</h4>
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
                         <div class="button-group">
                             <a href="{% url 'report:product_pdf' %}" class="mdc-button mdc-button--raised mdc-button--dense mdc-button--outlined icon-button" target="_blank">
                                 <i class="material-icons">picture_as_pdf</i> PDF
@@ -144,7 +156,11 @@
                 
                 <div class="mdc-layout-grid__cell">
                     <div class="mdc-card py-1">
+<<<<<<< HEAD
                         <h4 class="card-title mb-0">Products and Quantities</h4>
+=======
+                        <h4 class="card-title mb-0">Products and Quantities List</h4>
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
                         <div class="button-group">
                             <a href="{% url 'report:productqty_pdf' %}" class="mdc-button mdc-button--raised mdc-button--dense mdc-button--outlined icon-button" target="_blank">
                                 <i class="material-icons">picture_as_pdf</i> PDF
@@ -162,7 +178,11 @@
 <div class="mdc-layout-grid__cell stretch-card mdc-layout-grid__cell--span-12">
     <div class="mdc-card py-1">
         <div class="d-flex justify-content-between align-items-center">
+<<<<<<< HEAD
             <h4 class="card-title mb-0">Cash Closing</h4>
+=======
+            <h4 class="card-title mb-0">Cash Closure</h4>
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
         </div>
     </div>
 </div>
@@ -174,7 +194,31 @@
             <div class="mdc-layout-grid">
                 <div class="mdc-layout-grid__inner">
                     <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
+<<<<<<< HEAD
                         <input id="date" type="date" name="date" placeholder="MM/DD/YYYY" class="mdc-text-field__input custom-year-input" min="2023-01-01" max="{{ max_year }}-12-31">
+=======
+                        <input id="year" type="number" name="year" placeholder="Year" class="mdc-text-field__input custom-year-input" min="2023" max="{{ max_year }}">
+                    </div>
+                    <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
+                        <select id="month" name="month" class="mdc-text-field__input custom-month-input">
+                            <option value="" disabled selected>Month</option>
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+                    <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
+                        <input id="day" type="number" name="day" placeholder="Day" class="mdc-text-field__input" min="1" max="31">
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
                     </div>
                     <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
                         <button type="button" class="mdc-button mdc-button--raised mdc-button--dense mdc-button--outlined icon-button" onclick="generateDayPDF()">
@@ -193,7 +237,11 @@
 
 <div class="mdc-layout-grid__cell stretch-card mdc-layout-grid__cell--span-8">
     <div class="mdc-card py-1 px-1">
+<<<<<<< HEAD
         <h5 class="card-title">Daily Report (Date Range)</h5>
+=======
+        <h5 class="card-title">Daily Report Range</h5>
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
         <form id="daily-section-report-form" class="form" method="post" action="{% url 'report:mixtramo_sales_pdf' %}">
             {% csrf_token %}
             <div class="mdc-layout-grid">
@@ -202,14 +250,58 @@
                     <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
                         <h6 class="card-subtitle">Start Date</h6>
                         <div class="horizontal-fields">
+<<<<<<< HEAD
                             <input id="start_date" type="date" name="start_date" class="mdc-text-field__input" min="2023-01-01" max="{{ max_year }}-12-31">
+=======
+                            <input id="start_day" type="number" name="start_day" placeholder="Day"
+                                class="mdc-text-field__input" min="1" max="31">
+                            <select id="start_month" name="start_month" class="mdc-text-field__input">
+                                <option value="" disabled selected>Month</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                            <input id="start_year" type="number" name="start_year" placeholder="Year"
+                                class="mdc-text-field__input" min="2023" max="{{ max_year }}">
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
                         </div>
                     </div>
                     
                     <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
                         <h6 class="card-subtitle">End Date</h6>
                         <div class="horizontal-fields">
+<<<<<<< HEAD
                             <input id="end_date" type="date" name="end_date" class="mdc-text-field__input" min="2023-01-01" max="{{ max_year }}-12-31">
+=======
+                            <input id="end_day" type="number" name="end_day" placeholder="Day"
+                                class="mdc-text-field__input" min="1" max="31">
+                            <select id="end_month" name="end_month" class="mdc-text-field__input">
+                                <option value="" disabled selected>Month</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                            <input id="end_year" type="number" name="end_year" placeholder="Year"
+                                class="mdc-text-field__input" min="2023" max="{{ max_year }}">
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
                         </div>
                     </div>
                 </div>
@@ -222,8 +314,13 @@
                 </button>
                 <button type="button" class="mdc-button mdc-button--raised mdc-button--dense mdc-button--outlined icon-button" onclick="generateDaySectionExcel()">
                     <i class="material-icons">insert_drive_file</i> Generate Excel
+<<<<<<< HEAD
                 </button>
             </div>
+=======
+                </button>    
+            <di>
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
         </form>
     </div>
 </div>
@@ -235,7 +332,7 @@
         document.getElementById("daily-report-form").action = "{% url 'report:mix_sales_pdf' %}";
         document.getElementById("daily-report-form").submit();
     }
-    function generateDaySectionPDF(){
+    function generateDaySectionPDF() {
         document.getElementById("daily-section-report-form").action = "{% url 'report:mixtramo_sales_pdf' %}";
         document.getElementById("daily-section-report-form").submit();
     }

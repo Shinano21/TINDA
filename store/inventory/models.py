@@ -37,8 +37,8 @@ class Products(models.Model):
     STATUS_INACTIVE = 0
     STATUS_ACTIVE = 1
     STATUS_CHOICES = [
-        (STATUS_INACTIVE, 'Inactivo'),
-        (STATUS_ACTIVE, 'Activo'),
+        (STATUS_INACTIVE, 'Inactive'),
+        (STATUS_ACTIVE, 'Active'),
     ]
 
     code = models.CharField(max_length=100, unique=True)
@@ -97,9 +97,9 @@ class Products(models.Model):
     def clean(self):
         super().clean()
         if self.price <= Decimal('0'):
-            raise ValidationError("El precio debe ser mayor que cero.")
+            raise ValidationError("The price must be greater than zero.")
         if self.cost < Decimal('0'):
-            raise ValidationError("El costo no puede ser negativo.")
+            raise ValidationError("The cost cannot be negative.")
     
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -143,4 +143,3 @@ class Products(models.Model):
         if self.cost > 0:
             return (self.price - self.cost) / self.cost
         return None
-    # !no funciono porbar solo la eliminacion don pruchase

@@ -3,9 +3,9 @@
 <html>
 
 <head>
-    <title>Reporte de Compras</title>
+    <title>Purchase Report</title>
 
-    <!-- Estilos CSS -->
+    <!-- CSS Styles -->
     <style type="text/css">
         body {
             font-family: Arial, sans-serif;
@@ -73,7 +73,7 @@
         }
 
         
-        .report-cell-cliente {
+        .report-cell-customer {
             width: 20%; 
     
     
@@ -82,14 +82,14 @@
             text-overflow: ellipsis; 
     
         }
-        .report-cell-fagregado {
+        .report-cell-date-added {
             width: 25%; 
             
             white-space: nowrap; 
             overflow: hidden; 
             text-overflow: ellipsis;
         }
-        .report-cell-productos {
+        .report-cell-products {
             width: 25%; 
 
             white-space: nowrap; 
@@ -97,7 +97,7 @@
             text-overflow: ellipsis; 
             
         }
-        .report-cell-total {
+        .report-cell-total-amount-amount {
             width: 20%; 
             
             white-space: nowrap; 
@@ -105,7 +105,7 @@
             text-overflow: ellipsis;
         }
         
-        .report-cell-titems {
+        .report-cell-total-amount-amount-items {
             width: 10%; 
 
             
@@ -136,27 +136,27 @@
         <table class="report-table">
             <thead>
                 <tr>
-                    <th class="report-cell report-cell-cliente">Suppliers</th>
-                    <th class="report-cell report-cell-fagregado">Date &amp; Time</th>
-                    <th class="report-cell report-cell-productos">Products Cost/u</th>
-                    <th class="report-cell report-cell-total">Total</th>
-                    <th class="report-cell report-cell-titems">Total Item Qty</th>
+                    <th class="report-cell report-cell-customer">Suppliers</th>
+                    <th class="report-cell report-cell-date-added">Date &amp; Time</th>
+                    <th class="report-cell report-cell-products">Products Cost/u</th>
+                    <th class="report-cell report-cell-total-amount-amount">Total</th>
+                    <th class="report-cell report-cell-total-amount-amount-items">Total Item Qty</th>
                 </tr>
             </thead>
             <tbody>
                 {% for purchase in purchase_data %}
                 <tr>
-                    <td class="report-cell report-cell-cliente">{{ purchase.supplier }}</td>
-                    <td class="report-cell report-cell-fagregado">{{ purchase.date_added|date:'d-m-Y H:i' }}</td>
-                    <td class="report-cell report-cell-productos">
+                    <td class="report-cell report-cell-customer">{{ purchase.supplier }}</td>
+                    <td class="report-cell report-cell-date-added">{{ purchase.date_added|date:'d-m-Y H:i' }}</td>
+                    <td class="report-cell report-cell-products">
                         {% if purchase.products_list %}
                         {% for product, cost in purchase.products_list.items %}
                         {{ product|capfirst }} - {{ cost }}<br>
                         {% endfor %}
                         {% endif %}
                     </td>
-                    <td class="report-cell report-cell-total">{{ purchase.grand_total|floatformat:2 }} Bs</td>
-                    <td class="report-cell report-cell-titems">{{ purchase.total_items_bought }}</td>
+                    <td class="report-cell report-cell-total-amount-amount">{{ purchase.grand_total|floatformat:2 }}</td>
+                    <td class="report-cell report-cell-total-amount-amount-items">{{ purchase.total_items_bought }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -166,11 +166,11 @@
             <h3>General Summary</h3>
             <p>Total Suppliers: {{ total_suppliers }}</p>
             <p>Total Items Purchased: {{ total_items_purchased }}</p>
-            <p>Total Costs: {{ total_costs|floatformat:2|intcomma }} Bs</p>
+            <p>Total Costs: {{ total_costs|floatformat:2|intcomma }}</p>
         </div>
     </div>
     <footer>
-        <p style="text-align: right;">Clave Única: {{ unique_key }}</p>
+        <p style="text-align: right;">Unique Key: {{ unique_key }}</p>
     </footer>
 </body>
 

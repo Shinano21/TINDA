@@ -4,7 +4,7 @@
 <head>
     <title>Profit Report</title>
 
-    <!-- Estilos CSS -->
+    <!-- CSS Styles -->
     <style type="text/css">
         body {
             font-family: Arial, sans-serif;
@@ -72,7 +72,7 @@
         }
 
         
-        .report-cell-cliente {
+        .report-cell-customer {
             width: 20%; 
     
     
@@ -81,14 +81,14 @@
             text-overflow: ellipsis;
     
         }
-        .report-cell-fagregado {
+        .report-cell-date-added {
             width: 15%; 
             
             white-space: nowrap; 
             overflow: hidden; 
             text-overflow: ellipsis;
         }
-        .report-cell-productos {
+        .report-cell-products {
             width: 25%; 
 
             white-space: nowrap; 
@@ -97,7 +97,7 @@
             
         }
         
-        .report-cell-total {
+        .report-cell-total-amount-amount {
             width: 20%; 
             
             white-space: nowrap; 
@@ -105,7 +105,7 @@
             text-overflow: ellipsis;
         }
         
-        .report-cell-titems {
+        .report-cell-total-amount-amount-items {
             width: 25%; 
 
             
@@ -135,11 +135,19 @@
         <table class="report-table">
             <thead>
                 <tr>
+<<<<<<< HEAD
                     <th class="report-cell report-cell-productos">Product - Cost/u</th>
                     <th class="report-cell report-cell-total">Total Sale - Qty Sold</th>
                     <th class="report-cell report-cell-cliente">Profit per Sale</th>
                     <th class="report-cell report-cell-titems">Total Purchase - Qty Purchased</th>
                     <th class="report-cell report-cell-fagregado">Overall Profit</th>
+=======
+                    <th class="report-cell report-cell-products">Products - Cost/u</th>
+                    <th class="report-cell report-cell-total-amount-amount">Total Sale - Qty Units Sold</th>
+                    <th class="report-cell report-cell-customer">Sales Profits</th>
+                    <th class="report-cell report-cell-total-amount-amount-items">Total Purchase - Qty Units Bought</th>
+                    <th class="report-cell report-cell-date-added">General Profit</th>
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
                     
                 </tr>
             </thead>
@@ -149,10 +157,17 @@
                 <tr>
                     
                     <td>{{ product.product_name }} - {{ product.cost_per_unit|floatformat:2|intcomma }}</td>
+<<<<<<< HEAD
                     <td>{{ sale.costo_total|floatformat:2|intcomma }} - {{ product.total_qty_vendida }} units</td>
                     <td>{{ product.product_ganancia|floatformat:2|intcomma }}</td>
                     <td>{{ product.total_gasto_compras|floatformat:2|intcomma }} - {{ product.total_qty_comprada }} units</td>
                     <td>{{ product.ganancia_bruta|floatformat:2|intcomma }}</td>
+=======
+                    <td>{{ sale.total_cost|floatformat:2|intcomma }} - {{ product.total_qty_sold }} units</td>
+                    <td>{{ product.product_profit|floatformat:2|intcomma }} </td>
+                    <td>{{ product.total_purchase_expense|floatformat:2|intcomma }}  - {{ product.total_qty_bought }} units</td>
+                    <td>{{ product.gross_profit|floatformat:2|intcomma }}</td>
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
                     
                 </tr>
                 {% endfor %}
@@ -162,11 +177,19 @@
         
         
         <div class="summary">
+<<<<<<< HEAD
             <h3>Summary</h3>
             <p>Total Sales: {{ total_ingresos|floatformat:2|intcomma }}</p>
             <p>Total Costs: {{ total_costos|floatformat:2|intcomma }}</p>
             <p>Net Profit: {{ total_ganancia|floatformat:2|intcomma }}</p>
             <p>Utilities (Profit/Loss): {{ total_utilidades|floatformat:2|intcomma }}</p>
+=======
+            <h3>General Summary</h3>
+            <p>Total Sales: {{ total_income|floatformat:2|intcomma }}</p>
+            <p>Total Costs: {{ total_costs|floatformat:2|intcomma }}</p>
+            <p>Net Profit: {{ total_profit|floatformat:2|intcomma }}</p>
+            <p>Utilities (Profit/Loss): {{ total_utilities|floatformat:2|intcomma }}</p>
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
         </div>
     </div>
     <footer>

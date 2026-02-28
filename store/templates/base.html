@@ -12,7 +12,7 @@
     <title>Grocery POS</title>
     {% endif %}
 
-    <!-- jQuery (necesario para DataTables) -->
+    <!-- jQuery (necessary for DataTables) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <link rel="stylesheet" href="{% static 'posApp/assets/bootstrap/css/bootstrap.min.css' %}">
@@ -90,7 +90,11 @@
                     <div class="mdc-layout-grid">
                         <div class="mdc-layout-grid__inner">
                             <div class="mdc-layout-grid__cell stretch-card mdc-layout-grid__cell--span-6-desktop">
+<<<<<<< HEAD
                                 <span class="text-center text-sm-left d-block d-sm-inline-block tx-14">Developed by <a href="https://www.facebook.com/rjzashinano29" target="_blank">rjzashinano29</a> {% now 'Y' %} - All rights reserved.</span>
+=======
+                                <span class="text-center text-sm-left d-block d-sm-inline-block tx-14">Developed by <a href="https://twitter.com/Wa_ViGo" target="_blank">.()wArt</a> {% now 'Y' %}</span>
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
                             </div>
                         </div>
                     </div>
@@ -119,14 +123,14 @@
         <div class="modal-dialog modal-md modal-dialog-centered" role="document">
             <div class="modal-content rounded-0">
                 <div class="modal-header">
-                    <h5 class="modal-title">Confirmacion</h5>
+                    <h5 class="modal-title">Confirmation</h5>
                 </div>
                 <div class="modal-body">
                     <div id="delete_content"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-sm btn-flat btn-primary rounded-0" id='confirm' onclick="">Continuar</button>
-                    <button type="button" class="btn btn-sm btn-flat btn-secondary rounded-0" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-sm btn-flat btn-primary rounded-0" id='confirm' onclick="">Continue</button>
+                    <button type="button" class="btn btn-sm btn-flat btn-secondary rounded-0" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -145,7 +149,7 @@
                 url: $url,
                 error: err => {
                     console.log()
-                    alert("An error occured")
+                    alert("An error occurred")
                 },
                 success: function(resp) {
                     if (resp) {
@@ -183,7 +187,7 @@
     <script src="{% static 'posApp/assets/material-admin/js/dashboard.js' %}"></script>
     <script src="{% static 'posApp/assets/select2/dist/js/select2.full.js' %}"></script>
 
-    <!-- Bootstrap Bundle JS (incluye Popper) -->
+    <!-- Bootstrap Bundle JS (includes Popper) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>

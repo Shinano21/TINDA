@@ -5,8 +5,8 @@ from django import forms
 
 from purchase.models import *
 MONTH_NAMES = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
 
@@ -14,13 +14,13 @@ MONTH_CHOICES = [(str(i), month) for i, month in enumerate(MONTH_NAMES, 1)]
 
 
 DAYS_OF_WEEK = {
-    'Monday': 'Lunes',
-    'Tuesday': 'Martes',
-    'Wednesday': 'Miércoles',
-    'Thursday': 'Jueves',
-    'Friday': 'Viernes',
-    'Saturday': 'Sábado',
-    'Sunday': 'Domingo'
+    'Monday': 'Monday',
+    'Tuesday': 'Tuesday',
+    'Wednesday': 'Wednesday',
+    'Thursday': 'Thursday',
+    'Friday': 'Friday',
+    'Saturday': 'Saturday',
+    'Sunday': 'Sunday'
 }
 
 class SalesReportForm(forms.Form):
@@ -30,34 +30,40 @@ class SalesReportForm(forms.Form):
 
 
 class YearMonthForm(forms.Form):
-    year = forms.IntegerField(label="Año", min_value=1900, max_value=2100)
-    month = forms.ChoiceField(label="Mes", choices=MONTH_CHOICES)
+    year = forms.IntegerField(label="Year", min_value=1900, max_value=2100)
+    month = forms.ChoiceField(label="Month", choices=MONTH_CHOICES)
 
 
 class YearForm(forms.Form):
-    year = forms.IntegerField(label="Año", min_value=1900, max_value=2100)
+    year = forms.IntegerField(label="Year", min_value=1900, max_value=2100)
 
 
 class DayForm(forms.Form):
+<<<<<<< HEAD
     date = forms.DateField(label='Date', widget=forms.DateInput(attrs={'type': 'date'}))
+=======
+    year = forms.IntegerField(label="Year", min_value=1900, max_value=2100)
+    month = forms.ChoiceField(label="Month", choices=MONTH_CHOICES)
+    day = forms.IntegerField(label="Day", min_value=1, max_value=31)
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
 
 
 class DateRangeForm(forms.Form):
-    fecha_desde = forms.DateField(label="Fecha desde", widget=forms.DateInput(attrs={'type': 'date'}))
-    fecha_hasta = forms.DateField(label="Fecha hasta", widget=forms.DateInput(attrs={'type': 'date'}))
+    start_date = forms.DateField(label="Date from", widget=forms.DateInput(attrs={'type': 'date'}))
+    end_date = forms.DateField(label="Date to", widget=forms.DateInput(attrs={'type': 'date'}))
 
 
 class ReportForm(forms.Form):
     pass
 
 class MonthReportForm(forms.Form):
-    year = forms.IntegerField(label='Año', min_value=1900, max_value=datetime.now().year)
-    month = forms.IntegerField(label='Mes', min_value=1, max_value=12)
+    year = forms.IntegerField(label='Year', min_value=1900, max_value=datetime.now().year)
+    month = forms.IntegerField(label='Month', min_value=1, max_value=12)
 
 class DayReportForm(forms.Form):
-    year = forms.IntegerField(label='Año', min_value=1900, max_value=datetime.now().year)
-    month = forms.IntegerField(label='Mes', min_value=1, max_value=12)
-    day = forms.IntegerField(label='Día', min_value=1, max_value=31)
+    year = forms.IntegerField(label='Year', min_value=1900, max_value=datetime.now().year)
+    month = forms.IntegerField(label='Month', min_value=1, max_value=12)
+    day = forms.IntegerField(label='Day', min_value=1, max_value=31)
 
 class PurchaseReportForm(forms.Form):
     start_date = forms.DateField(required=False, widget=forms.TextInput(attrs={'type': 'date'}))
@@ -69,18 +75,56 @@ class YearReportForm(forms.Form):
     current_year = datetime.now().year
     YEAR_CHOICES = [(year, year) for year in range(current_year - 10, current_year + 1)]
 
-    year = forms.ChoiceField(choices=YEAR_CHOICES, required=True, label="Seleccione el Año", widget=forms.Select)
+    year = forms.ChoiceField(choices=YEAR_CHOICES, required=True, label="Select Year", widget=forms.Select)
 
 class MonthYearReportForm(forms.Form):
-    year = forms.IntegerField(min_value=2000, max_value=timezone.now().year, label='Año')
-    month = forms.IntegerField(min_value=1, max_value=12, label='Mes')
+    year = forms.IntegerField(min_value=2000, max_value=timezone.now().year, label='Year')
+    month = forms.IntegerField(min_value=1, max_value=12, label='Month')
 
 class DayMonthYearReportForm(forms.Form):
-    year = forms.IntegerField(min_value=2000, max_value=timezone.now().year, label='Año')
-    month = forms.IntegerField(min_value=1, max_value=12, label='Mes')
-    day = forms.IntegerField(min_value=1, max_value=31, label='Día')  # Nota: No valida días específicos para cada mes
+    year = forms.IntegerField(min_value=2000, max_value=timezone.now().year, label='Year')
+    month = forms.IntegerField(min_value=1, max_value=12, label='Month')
+    day = forms.IntegerField(min_value=1, max_value=31, label='Day')  # Note: Does not validate specific days for each month
 
 class DayTramoForm(forms.Form):
+<<<<<<< HEAD
     start_date = forms.DateField(label='Start date', widget=forms.DateInput(attrs={'type': 'date'}))
     end_date = forms.DateField(label='End date', widget=forms.DateInput(attrs={'type': 'date'}))
 
+=======
+    start_year = forms.IntegerField(label='Start Year', min_value=2023)
+    start_month = forms.ChoiceField(label='Start Month', choices=[
+        ('', 'Month'),
+        (1, 'January'),
+        (2, 'February'),
+        (3, 'March'),
+        (4, 'April'),
+        (5, 'May'),
+        (6, 'June'),
+        (7, 'July'),
+        (8, 'August'),
+        (9, 'September'),
+        (10, 'October'),
+        (11, 'November'),
+        (12, 'December'),
+    ])
+    start_day = forms.IntegerField(label='Start Day', min_value=1, max_value=31)
+
+    end_year = forms.IntegerField(label='End Year', min_value=2023)
+    end_month = forms.ChoiceField(label='End Month', choices=[
+        ('', 'Month'),
+        (1, 'January'),
+        (2, 'February'),
+        (3, 'March'),
+        (4, 'April'),
+        (5, 'May'),
+        (6, 'June'),
+        (7, 'July'),
+        (8, 'August'),
+        (9, 'September'),
+        (10, 'October'),
+        (11, 'November'),
+        (12, 'December'),
+    ])
+    end_day = forms.IntegerField(label='End Day', min_value=1, max_value=31)
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea

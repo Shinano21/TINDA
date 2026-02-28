@@ -34,7 +34,11 @@
 
 <div class="mdc-layout-grid__cell stretch-card mdc-layout-grid__cell--span-4">
     <div class="mdc-card py-1">
+<<<<<<< HEAD
         <h5 class="card-title">Annual Report</h5>
+=======
+        <h5 class="card-title">Yearly Report</h5>
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
         <form id="yearly-report-form" class="form" method="post" action="{% url 'report:generate_pdf_sales_year' %}">
             {% csrf_token %}
             <div class="mdc-layout-grid">
@@ -70,9 +74,31 @@
             <div class="mdc-layout-grid">
                 <div class="mdc-layout-grid__inner">
                     <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
+<<<<<<< HEAD
                         <input id="month_picker" type="month" name="month_picker" class="mdc-text-field__input custom-year-input">
                         <input type="hidden" name="year" id="monthly_year">
                         <input type="hidden" name="month" id="monthly_month">
+=======
+                        <input id="year" type="number" name="year" placeholder="Year"
+                            class="mdc-text-field__input custom-year-input" min="2023" max="{{ max_year }}">
+                    </div>
+                    <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
+                        <select id="month" name="month" class="mdc-text-field__input custom-month-input">
+                            <option value="" disabled selected>Month</option>
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
                     </div>
                 </div>
                 <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6 d-flex justify-content-end align-items-center">
@@ -101,10 +127,36 @@
             <div class="mdc-layout-grid">
                 <div class="mdc-layout-grid__inner">
                     <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
+<<<<<<< HEAD
                         <input id="date_picker" type="date" name="date_picker" class="mdc-text-field__input custom-year-input">
                         <input type="hidden" name="year" id="daily_year">
                         <input type="hidden" name="month" id="daily_month">
                         <input type="hidden" name="day" id="daily_day">
+=======
+                        <input id="year" type="number" name="year" placeholder="Year"
+                            class="mdc-text-field__input custom-year-input" min="2023" max="{{ max_year }}">
+                    </div>
+                    <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
+                        <select id="month" name="month" class="mdc-text-field__input custom-month-input">
+                            <option value="" disabled selected>Month</option>
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+                    <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-10">
+                        <input id="day" type="number" name="day" placeholder="Day" class="mdc-text-field__input" min="1"
+                            max="31">
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
                     </div>
                 </div>
                 <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-6 d-flex justify-content-end align-items-center">
@@ -135,7 +187,11 @@
                         <div class="mdc-card py-1">
                             <h4 class="card-title mb-0">General Summary</h4>
                             <p>Total Suppliers: {{ total_suppliers }}</p>
+<<<<<<< HEAD
                             <p>Total Items Purchased: {{ total_items_purchased }}</p>
+=======
+                            <p>Quantity of Items Purchased: {{ total_items_purchased }}</p>
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
                             <p>Total Costs: {{ total_costs|intcomma }}</p>
                         </div>
                     </div>
@@ -168,10 +224,17 @@
                 <thead>
                     <tr>
                         <th class="text-center py-1">Suppliers</th>
+<<<<<<< HEAD
                         <th class="text-center py-1">Date &amp; Time</th>
                         <th class="text-center py-1">Products - Cost/u</th>
                         <th class="text-center py-1">Total</th>
                         <th class="text-center py-1">Total Items</th>
+=======
+                        <th class="text-center py-1">Date and Time</th>
+                        <th class="text-center py-1">Products - Cost/u</th>
+                        <th class="text-center py-1">Total</th>
+                        <th class="text-center py-1">Total Items Count</th>
+>>>>>>> 34cc06a43306d90c1ec90c9b7ceefa3e8a99c7ea
                     </tr>
                 </thead>
                 <tbody>

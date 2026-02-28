@@ -89,7 +89,7 @@ def save_pos(request):
 
         resp['status'] = 'success'
         resp['sale'] = sale_id
-        messages.success(request, "La venta fue registrada.")
+        messages.success(request, "The sale was registered.")
     except Exception as e:
         resp['msg'] = "An error occurred: " + str(e)
 
@@ -130,8 +130,8 @@ def create_sales_item(request, product_id, qty, sale_instance):
     product = get_object_or_404(Products, id=product_id)
     try:
         qty = int(qty)
-        if product.cantidad < qty:
-            return JsonResponse({"error": "No hay suficiente cantidad de producto para vender."}, status=400)
+        if product.quantity < qty:
+            return JsonResponse({"error": "Insufficient product quantity for sale."}, status=400)
         sales_item = salesItems.objects.create(
             product=product,
             qty=qty,
@@ -140,9 +140,9 @@ def create_sales_item(request, product_id, qty, sale_instance):
             sale=sale_instance
         )
         product.update_quantity_on_sale(qty)
-        return JsonResponse({"success": "Item de venta creado exitosamente."})
+        return JsonResponse({"success": "Sales item created successfully."})
     except ValueError:
-        return JsonResponse({"error": "Cantidad inválida."}, status=400)
+        return JsonResponse({"error": "Invalid quantity."}, status=400)
 
 @login_required
 @permission_required('pos.add_sales', raise_exception=True)
@@ -175,27 +175,27 @@ def create_sale(request):
         sale.grand_total = sale.sub_total + sale.tax_amount
         sale.save()
 
-        return JsonResponse({"success": "Venta creada exitosamente."})
+        return JsonResponse({"success": "Sale created successfully."})
 
-    return JsonResponse({"error": "Método no permitido."}, status=405)
+    return JsonResponse({"error": "Method not allowed."}, status=405)
 
 @login_required
 def receipt(request):
     id = request.GET.get('id')
     sales = Sales.objects.filter(id=id).first()
-    transaction = {}
+    transaction_data = {}
     for field in Sales._meta.get_fields():
         if field.related_model is None: 
-            transaction[field.name] = getattr(sales, field.name)
-    if 'tax_amount' in transaction:
-        transaction['tax_amount'] = format(float(transaction['tax_amount']))
+            transaction_data[field.name] = getattr(sales, field.name)
+    if 'tax_amount' in transaction_data:
+        transaction_data['tax_amount'] = format(float(transaction_data['tax_amount']))
     ItemList = salesItems.objects.filter(sale=sales).all()
     
-        # Cambiar el idioma a español para la fecha
-    with translation.override('es'):
-        formatted_date = DateFormat(sales.date_added).format('d \de F Y')
+    # Use English for the date format
+    with translation.override('en'):
+        formatted_date = DateFormat(sales.date_added).format('F d, Y')
     context = {
-        "transaction": transaction,
+        "transaction": transaction_data,
         "salesItems": ItemList,
         
         "formatted_date": formatted_date,
@@ -214,11 +214,11 @@ def delete_sale(request):
                 item.delete()
             sale.delete()
         resp['status'] = 'success'
-        messages.success(request, 'El registro de Venta fue eliminado y las cantidades de productos fueron restauradas.')
+        messages.success(request, 'The sale record was deleted and product quantities were restored.')
     except Sales.DoesNotExist:
-        resp['msg'] = "La venta no existe"
+        resp['msg'] = "The sale does not exist"
     except Exception as e:
-        resp['msg'] = f"Ocurrió un error: {str(e)}"
+        resp['msg'] = f"An error occurred: {str(e)}"
     return HttpResponse(json.dumps(resp), content_type='application/json')
 
 def error_403(request, exception=None):
